@@ -164,8 +164,6 @@ body{min-height:100dvh}
           <button class="gcs-btn" data-g="e" data-v="4" onclick="setGCS(this)">Spontaneous</button>
           <button class="gcs-btn" data-g="e" data-v="3" onclick="setGCS(this)">To voice</button>
           <button class="gcs-btn" data-g="e" data-v="2" onclick="setGCS(this)">To pain</button>
-          <button class="gcs-btn" data-g="e" data-v="1" onclick="setGCS(this)">None<button class="gcs-btn" data-g="v" data-v="1" onclick="setGCS(this)">None</button>
-</button>
         </div>
       </div>
 
@@ -176,7 +174,6 @@ body{min-height:100dvh}
           <button class="gcs-btn" data-g="v" data-v="4" onclick="setGCS(this)">Confused</button>
           <button class="gcs-btn" data-g="v" data-v="3" onclick="setGCS(this)">Incoherent</button>
           <button class="gcs-btn" data-g="v" data-v="2" onclick="setGCS(this)">Incomprehensible</button>
-          <button class="gcs-btn" data-g="v" data-v="1" onclick="setGCS(this)">None</button>
         </div>
       </div>
 
@@ -188,7 +185,6 @@ body{min-height:100dvh}
           <button class="gcs-btn" data-g="m" data-v="4" onclick="setGCS(this)">Withdraws</button>
           <button class="gcs-btn" data-g="m" data-v="3" onclick="setGCS(this)">Decorticated</button>
           <button class="gcs-btn" data-g="m" data-v="2" onclick="setGCS(this)">Decerebrated</button>
-          <button class="gcs-btn" data-g="m" data-v="1" onclick="setGCS(this)">None</button>
         </div>
       </div>
 
@@ -303,11 +299,18 @@ let gcsE = 0, gcsV = 0, gcsM = 0;
 
 function setGCS(btn){
   const g = btn.dataset.g;
+  const wasOn = btn.classList.contains('on');
   document.querySelectorAll(`.gcs-btn[data-g="${g}"]`).forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-  if(g === 'e') gcsE = parseInt(btn.dataset.v);
-  else if(g === 'v') gcsV = parseInt(btn.dataset.v);
-  else gcsM = parseInt(btn.dataset.v);
+  if(!wasOn){
+    btn.classList.add('on');
+    if(g==='e') gcsE = parseInt(btn.dataset.v);
+    else if(g==='v') gcsV = parseInt(btn.dataset.v);
+    else gcsM = parseInt(btn.dataset.v);
+  } else {
+    if(g==='e') gcsE = 0;
+    else if(g==='v') gcsV = 0;
+    else gcsM = 0;
+  }
   updateGCS();
   updateDispatchBtn();
 }

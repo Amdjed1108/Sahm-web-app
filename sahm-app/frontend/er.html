@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SAHM — ER Déchocage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAECF0;--surface:#fff;--s2:#F9FAFB;--s3:#F3F4F6;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--text2:#6B7280;--text3:#9CA3AF;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 8px 24px rgba(0,0,0,.1);
+  --shadow-xl:0 20px 60px rgba(0,0,0,.18);
+  --red:#DC2626;--red-bg:#FEF2F2;--red-br:#FECACA;
+  --blue:#2563EB;--blue-bg:#EFF6FF;--blue-br:#BFDBFE;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;--purple-br:#DDD6FE;
+  --stab:#059669;--stab-bg:#ECFDF5;--stab-br:#A7F3D0;
+  --urg:#D97706;--urg-bg:#FFFBEB;--urg-br:#FDE68A;
+  --r:12px;--r-sm:8px;--r-lg:18px;--nav-h:54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text)}
+body{min-height:100dvh}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;padding:0 14px;z-index:100;gap:7px}
+.notif-wrap{display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.notif-dot{min-width:8px;height:8px;border-radius:99px;background:#EF4444;animation:notifPulse 2.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;transition:min-width .18s,height .18s,padding .18s;padding:0}
+.notif-dot.has-count{min-width:16px;height:16px;padding:0 4px}
+@keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
+.nav-logo{font-size:13px;font-weight:700;letter-spacing:2.5px;color:var(--text);flex-shrink:0}
+.nav-sep{font-size:11px;color:var(--border2);letter-spacing:1px;flex-shrink:0}
+.nav-role{font-size:11.5px;font-weight:600;color:var(--text2);flex-shrink:0}
+.er-badge{font-size:10.5px;font-weight:700;background:var(--red-bg);color:var(--red);border:1px solid var(--red-br);border-radius:999px;padding:3px 9px;flex-shrink:0}
+.nav-spacer{flex:1}
+.nav-reg-btn{height:32px;padding:0 12px;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.nav-signout{font-size:12px;font-weight:500;color:var(--text3);background:none;border:none;cursor:pointer;padding:4px;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.nav-signout:hover{color:var(--text)}
+
+/* ── PATIENT TABS BAR ── */
+.pt-tabs-bar{position:fixed;top:var(--nav-h);left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);z-index:90;display:flex;align-items:stretch;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.pt-tabs-bar::-webkit-scrollbar{display:none}
+.pt-tab{display:flex;flex-direction:column;justify-content:center;padding:6px 14px;border-right:1px solid var(--border);cursor:pointer;min-width:130px;flex-shrink:0;transition:background .12s;border-bottom:3px solid transparent;-webkit-tap-highlight-color:transparent}
+.pt-tab:hover{background:var(--s2)}
+.pt-tab.active{background:var(--surface);border-bottom-color:var(--red)}
+.pt-tab-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pt-tab-meta{display:flex;align-items:center;gap:5px;margin-top:2px}
+.gcs-chip{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px}
+.gcs-chip.severe{background:var(--red-bg);color:var(--red);border:1px solid var(--red-br)}
+.gcs-chip.moderate{background:var(--urg-bg);color:var(--urg);border:1px solid var(--urg-br)}
+.gcs-chip.normal{background:var(--stab-bg);color:var(--stab);border:1px solid var(--stab-br)}
+.pt-tab-time{font-size:10px;color:var(--text3)}
+.pt-count{font-size:11px;font-weight:600;color:var(--text3);padding:0 12px;display:flex;align-items:center;flex-shrink:0}
+
+/* ── MAIN ── */
+.main{padding:14px;display:flex;flex-direction:column;gap:12px;padding-bottom:36px;max-width:600px;margin-left:auto;margin-right:auto}
+
+/* ── EMPTY STATE ── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text3);padding:60px 20px;text-align:center}
+.empty-state svg{opacity:.2}
+.empty-state h3{font-size:15px;font-weight:700;color:var(--text2)}
+.empty-state p{font-size:12.5px}
+
+/* ── PATIENT HEADER CARD ── */
+.pt-header-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;display:flex;align-items:center;gap:10px}
+.pt-header-info{flex:1;min-width:0}
+.pt-header-name{font-size:15px;font-weight:700;color:var(--text)}
+.pt-header-meta{font-size:11.5px;color:var(--text2);margin-top:2px}
+.gcs-badge-large{font-size:12px;font-weight:800;padding:4px 12px;border-radius:6px;flex-shrink:0}
+.gcs-badge-large.severe{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-br)}
+.gcs-badge-large.moderate{background:var(--urg-bg);color:var(--urg);border:1.5px solid var(--urg-br)}
+.gcs-badge-large.normal{background:var(--stab-bg);color:var(--stab);border:1.5px solid var(--stab-br)}
+.log-btn{height:32px;padding:0 12px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+
+/* ── SECTION CARD ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--s2);border-bottom:1px solid var(--border)}
+.card-title{font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+.card-body{padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* ── INFO GRID ── */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.info-grid.full{grid-template-columns:1fr}
+.info-label{font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
+.info-val{font-size:12.5px;color:var(--text);line-height:1.5}
+.info-val.bold{font-weight:700}
+.info-val.mono{font-family:'JetBrains Mono',monospace;font-size:11.5px}
+.info-val.blood{color:var(--red);font-weight:700}
+
+/* ── NOTES ── */
+.notes-section{border-top:1px solid var(--border);padding-top:10px;margin-top:2px;display:flex;flex-direction:column;gap:8px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.field-input{height:40px;padding:0 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;width:100%;transition:border .14s}
+.field-input:focus{border-color:var(--blue);background:#fff}
+.field-input::placeholder{color:var(--text3)}
+.field-select{height:40px;padding:0 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;width:100%;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.field-textarea{padding:9px 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;width:100%;resize:none;min-height:72px;line-height:1.5;transition:border .14s}
+.field-textarea:focus{border-color:var(--blue);background:#fff}
+.field-textarea::placeholder{color:var(--text3)}
+.save-notes-btn{height:38px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* ── EXAMS ── */
+.exam-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--s2)}
+.exam-info{flex:1;min-width:0}
+.exam-type{font-size:12.5px;font-weight:600;color:var(--text)}
+.exam-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.exam-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0}
+.exam-badge.pending{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-br)}
+.exam-badge.done{background:var(--stab-bg);color:var(--stab);border:1px solid var(--stab-br)}
+.exam-dept-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;flex-shrink:0}
+.exam-dept-badge.rad{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br)}
+.exam-dept-badge.bio{background:var(--urg-bg);color:var(--urg);border:1px solid var(--urg-br)}
+
+.exam-form{display:none;padding:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px}
+.urg-row{display:flex;gap:5px}
+.urg-btn{flex:1;height:34px;border:1.5px solid var(--border);border-radius:6px;background:var(--s2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent}
+.urg-btn.on.crit{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.urg-btn.on.urg{border-color:var(--urg);color:var(--urg);background:var(--urg-bg)}
+.urg-btn.on.rout{border-color:var(--stab);color:var(--stab);background:var(--stab-bg)}
+.req-btn{height:38px;padding:0 14px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent}
+.cancel-btn{height:38px;padding:0 14px;background:var(--s2);color:var(--text2);border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* ── VERDICT ── */
+.verdict-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.verdict-opt{height:48px;border-radius:var(--r-sm);border:2px solid var(--border);background:var(--s2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:all .14s;color:var(--text2);-webkit-tap-highlight-color:transparent}
+.verdict-opt:active{transform:scale(.97)}
+.verdict-opt.on.go{border-color:var(--stab);color:var(--stab);background:var(--stab-bg)}
+.verdict-opt.on.rean{border-color:var(--purple);color:var(--purple);background:var(--purple-bg)}
+.verdict-opt.on.fwd{border-color:var(--blue);color:var(--blue);background:var(--blue-bg)}
+.verdict-opt:hover:not(.on){border-color:var(--border2)}
+.verdict-extra{display:none;flex-direction:column;gap:8px}
+.verdict-extra.show{display:flex}
+.confirm-verdict-btn{height:42px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;width:100%;-webkit-tap-highlight-color:transparent}
+.confirm-verdict-btn:active{transform:scale(.98)}
+.verdict-finalized{padding:10px 13px;background:var(--stab-bg);border:1px solid var(--stab-br);border-radius:var(--r-sm);font-size:12.5px;color:var(--stab);font-weight:600;line-height:1.5}
+
+/* ── HISTORY LOG ── */
+.log-entry{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.log-entry:last-child{border-bottom:none}
+.log-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);flex-shrink:0}
+.log-who{font-size:11.5px;font-weight:600;color:var(--text2);flex-shrink:0;width:110px}
+.log-what{font-size:12px;color:var(--text);line-height:1.4}
+
+/* ── PIN MODAL ── */
+.modal-bg{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .18s}
+.modal-bg.show{opacity:1;pointer-events:all}
+.pin-card{background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:24px 24px 32px;width:100%;max-width:400px;box-shadow:var(--shadow-xl);transform:translateY(20px);transition:transform .2s}
+.modal-bg.show .pin-card{transform:translateY(0)}
+.pin-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.pin-sub{font-size:11.5px;color:var(--text3);margin-bottom:20px}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin-bottom:20px}
+.pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border2);transition:all .14s}
+.pin-dot.on{background:var(--red);border-color:var(--red)}
+.pin-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pkey{height:52px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .1s}
+.pkey:active{background:var(--s3)}
+.pkey.span2{grid-column:span 2;font-size:12px;color:var(--text3);font-weight:500}
+.pkey.del{font-size:14px;color:var(--text2)}
+
+/* ── REGISTER PANEL ── */
+.reg-panel{position:fixed;inset:0;top:var(--nav-h);background:var(--surface);z-index:400;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.25,.46,.45,.94)}
+.reg-panel.open{transform:translateY(0)}
+.reg-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--s2)}
+.reg-head-title{font-size:15px;font-weight:700;color:var(--text)}
+.reg-close{background:none;border:none;cursor:pointer;color:var(--text3);padding:6px;border-radius:6px;display:flex;align-items:center;-webkit-tap-highlight-color:transparent}
+.reg-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch}
+.reg-section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-grid.full{grid-template-columns:1fr}
+.reg-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--surface)}
+.reg-submit{flex:1;height:42px;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.reg-cancel{height:42px;padding:0 16px;background:none;border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text2);cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* severity indicator in reg */
+.sev-row{display:flex;gap:6px}
+.sev-btn{flex:1;height:38px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--s2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent}
+.sev-btn.on.severe{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.sev-btn.on.moderate{border-color:var(--urg);color:var(--urg);background:var(--urg-bg)}
+.sev-btn.on.normal{border-color:var(--stab);color:var(--stab);background:var(--stab-bg)}
+
+/* GCS widget (register panel) */
+.gcs-section{display:flex;flex-direction:column;gap:4px}
+.gcs-section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
+.gcs-opts{display:flex;flex-wrap:wrap;gap:5px}
+.gcs-btn{height:32px;padding:0 9px;border:1.5px solid var(--border);border-radius:6px;background:var(--s2);font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.gcs-btn:active{transform:scale(.96)}
+.gcs-btn.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.gcs-result{display:flex;align-items:stretch;gap:10px;padding:12px;background:var(--s2);border-radius:var(--r-sm);border:1px solid var(--border)}
+.gcs-score-block{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding:8px;border-radius:var(--r-sm);background:var(--surface);border:1.5px solid var(--border)}
+.gcs-score-num{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
+.gcs-score-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;color:var(--text3)}
+.gcs-score-num.normal{color:var(--stab)}
+.gcs-score-num.moderate{color:var(--urg)}
+.gcs-score-num.severe{color:var(--red)}
+.gcs-routing-block{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 12px;border-radius:var(--r-sm)}
+.gcs-routing-block.pending{background:var(--s3);border:1.5px dashed var(--border2)}
+.gcs-routing-block.office{background:var(--stab-bg);border:1.5px solid var(--stab-br)}
+.gcs-routing-block.er{background:var(--red-bg);border:1.5px solid var(--red-br)}
+.gcs-routing-title{font-size:13px;font-weight:800;margin-bottom:2px}
+.gcs-routing-block.pending .gcs-routing-title{color:var(--text3)}
+.gcs-routing-block.office .gcs-routing-title{color:var(--stab)}
+.gcs-routing-block.er .gcs-routing-title{color:var(--red)}
+.gcs-routing-sub{font-size:11px;color:var(--text3)}
+.gcs-routing-block.office .gcs-routing-sub{color:var(--stab)}
+.gcs-routing-block.er .gcs-routing-sub{color:var(--red)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="notif-wrap" id="notif-wrap">
+    <div class="notif-dot" id="notif-dot"></div>
+  </div>
+  <span class="nav-logo">SAHM</span>
+  <span class="nav-sep">//</span>
+  <span class="nav-role">ER</span>
+  <span class="er-badge">Déchocage</span>
+  <div class="nav-spacer"></div>
+  <button class="nav-reg-btn" id="btn-register">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Register
+  </button>
+  <button class="nav-signout">Sign out</button>
+</nav>
+
+<!-- Patient Tabs -->
+<div class="pt-tabs-bar" id="pt-tabs-bar">
+  <span class="pt-count" id="pt-count">0 patients</span>
+</div>
+
+<!-- Main content -->
+<div style="margin-top:calc(var(--nav-h) + 44px)">
+  <div class="main" id="main-content">
+
+    <div class="empty-state" id="empty-state">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <h3>No patient selected</h3>
+      <p>Register a patient or tap a tab above</p>
+    </div>
+
+    <!-- Patient view (shown when patient selected) -->
+    <div id="pt-view" style="display:none">
+
+      <!-- Header -->
+      <div class="pt-header-card" style="margin-bottom:12px">
+        <div class="pt-header-info">
+          <div class="pt-header-name" id="ph-name">—</div>
+          <div class="pt-header-meta" id="ph-meta">—</div>
+        </div>
+        <span class="gcs-badge-large" id="ph-gcs-badge">GCS —</span>
+        <button class="log-btn" id="btn-log">Log</button>
+      </div>
+
+      <!-- Patient Info -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">Patient Information</span></div>
+        <div class="card-body">
+          <div class="info-grid" id="info-grid-body"></div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Medical History</span>
+          <span id="history-badge" style="font-size:10.5px;font-weight:600;color:var(--text3);background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:2px 7px">—</span>
+        </div>
+        <div class="card-body" id="history-body">
+          <div style="font-size:12px;color:var(--text3);font-style:italic">No prior history on file.</div>
+        </div>
+      </div>
+
+      <!-- Exam Requests -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Exam Requests</span>
+          <button class="req-btn" onclick="openPin('exam')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Request
+          </button>
+        </div>
+        <div class="card-body" id="exam-list">
+          <div style="font-size:12px;color:var(--text3);font-style:italic">No exams requested yet.</div>
+        </div>
+        <!-- Exam form (toggled) -->
+        <div id="exam-form" style="display:none;padding:14px;border-top:1px solid var(--border)">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="field">
+              <label class="field-label">Exam type</label>
+              <select class="field-select" id="ef-type">
+                <option value="">Select…</option>
+                <optgroup label="Radiology">
+                  <option value="Chest X-ray" data-dept="Radiology">Chest X-ray</option>
+                  <option value="CT scan" data-dept="Radiology">CT scan</option>
+                  <option value="Ultrasound" data-dept="Radiology">Ultrasound</option>
+                  <option value="MRI" data-dept="Radiology">MRI</option>
+                  <option value="Echo (cardiac)" data-dept="Radiology">Echo (cardiac)</option>
+                </optgroup>
+                <optgroup label="Biology / Tests">
+                  <option value="Blood panel" data-dept="Biology">Blood panel</option>
+                  <option value="Urinalysis" data-dept="Biology">Urinalysis</option>
+                  <option value="Blood culture" data-dept="Biology">Blood culture</option>
+                  <option value="Coagulation screen" data-dept="Biology">Coagulation screen</option>
+                  <option value="Arterial blood gas" data-dept="Biology">Arterial blood gas</option>
+                  <option value="Cardiac enzymes" data-dept="Biology">Cardiac enzymes</option>
+                  <option value="Toxicology screen" data-dept="Biology">Toxicology screen</option>
+                  <option value="Electrolytes" data-dept="Biology">Electrolytes</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label">Notes for lab</label>
+              <textarea class="field-textarea" id="ef-notes" rows="2" placeholder="Clinical context…" style="min-height:56px"></textarea>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="req-btn" style="flex:1;justify-content:center;height:40px" onclick="submitExam()">Send (PIN required)</button>
+              <button class="cancel-btn" onclick="closeExamForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final Conclusion -->
+      <div class="card">
+        <div class="card-head"><span class="card-title">Final Conclusion</span></div>
+        <div class="card-body">
+          <div class="field">
+            <label class="field-label">Diagnosis / Clinical conclusion</label>
+            <textarea class="field-textarea" id="conclusion-text" rows="3" placeholder="Write the patient's diagnosis and clinical conclusion here…" style="min-height:90px"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Final Verdict -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Final Verdict</span>
+          <span id="verdict-author" style="font-size:11px;font-weight:600;color:var(--text3);background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:2px 7px">Doctor PIN required</span>
+        </div>
+        <div class="card-body">
+          <div class="verdict-grid">
+            <button class="verdict-opt" data-d="go" onclick="selectVerdict(this)">✓ Good<br>to go</button>
+            <button class="verdict-opt" data-d="rean" onclick="selectVerdict(this)">⟳ Réani-<br>mation</button>
+            <button class="verdict-opt" data-d="fwd" onclick="selectVerdict(this)">→ Forward<br>to service</button>
+          </div>
+          <div class="verdict-extra" id="verdict-extra">
+            <div class="field" id="fwd-field" style="display:none">
+              <label class="field-label">Forward to service</label>
+              <select class="field-select" id="fwd-service">
+                <option value="">Select service…</option>
+                <option>Anatomie Pathologique</option>
+                <option>Anesthésie Réanimation</option>
+                <option>Anesthésie Réanimation BIS</option>
+                <option>Biochimie</option>
+                <option>Cardiologie</option>
+                <option>Chirurgie Générale « A »</option>
+                <option>Chirurgie Générale « B »</option>
+                <option>Chirurgie Maxillo-Faciale</option>
+                <option>Chirurgie Orthopédique et Traumatologie</option>
+                <option>Chirurgie Urologique</option>
+                <option>Chirurgie Pédiatrique</option>
+                <option>Chirurgie Thoracique et Cardio Vasculaire</option>
+                <option>Chirurgie Cardiaque</option>
+                <option>Dermatologie</option>
+                <option>Diabétologie Endocrinologie et Maladies Métaboliques</option>
+                <option>Epidémiologie et Médecine Préventive</option>
+                <option>Gastrologie Entérologie</option>
+                <option>Gynécologie Obstétrique</option>
+                <option>Hépatologie</option>
+                <option>Hémobiologie et Banque de Sang</option>
+                <option>Immunologie</option>
+                <option>Médecine Interne</option>
+                <option>Médecine Légale, Droit Médical et Ethique</option>
+                <option>Médecine du Travail</option>
+                <option>Médecine Physique Et Réadaptation</option>
+                <option>Microbiologie</option>
+                <option>Néonatalogie</option>
+                <option>Néphrologie Hémodialyse</option>
+                <option>Neurologie</option>
+                <option>Neurochirurgie</option>
+                <option>Ophtalmologie</option>
+                <option>Oncologie Pédiatrique</option>
+                <option>Oto Rhino Laryngologie</option>
+                <option>Odontologie Conservatrice</option>
+                <option>Orthodontie Dento Faciale</option>
+                <option>Parasitologie &amp; Mycologie</option>
+                <option>Pédiatrie</option>
+                <option>Pneumologie Phtisiologie</option>
+                <option>Psychiatrie</option>
+                <option>Pathologie Bucco-Dentaire</option>
+                <option>Parodontologie</option>
+                <option>Prothèse Dentaire</option>
+                <option>Imagerie Médical et Radiologie</option>
+                <option>Réanimation Médicale Polyvalente</option>
+                <option>Urgences Medico Chirurgicales</option>
+                <option>Urgences Médicales</option>
+                <option>Epidemiology</option>
+              </select>
+            </div>
+            <button class="confirm-verdict-btn" id="verdict-submit-btn" onclick="openPin('decision')">Confirm verdict (PIN required)</button>
+          </div>
+          <div id="verdict-finalized" style="display:none"></div>
+        </div>
+      </div>
+
+      <!-- Consultation History -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Consultation History</span>
+          <span id="history-count" style="font-size:11px;font-weight:600;color:var(--text3);background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:2px 7px">—</span>
+        </div>
+        <div class="card-body" id="consult-history-body">
+          <div style="font-size:12px;color:var(--text3);font-style:italic">No history yet.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Register Patient Panel (slides up from bottom) -->
+<div class="reg-panel" id="reg-panel">
+  <div class="reg-head">
+    <span class="reg-head-title">Register ER Patient</span>
+    <button class="reg-close" id="reg-close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="reg-body">
+
+    <div>
+      <div class="reg-section-label">Glasgow Coma Scale on Arrival</div>
+
+      <div class="gcs-section" style="margin-bottom:8px">
+        <div class="gcs-section-label">Eye Opening</div>
+        <div class="gcs-opts">
+          <button class="gcs-btn" data-g="re" data-v="4" onclick="setRegGCS(this)">Spontaneous</button>
+          <button class="gcs-btn" data-g="re" data-v="3" onclick="setRegGCS(this)">To voice</button>
+          <button class="gcs-btn" data-g="re" data-v="2" onclick="setRegGCS(this)">To pain</button>
+        </div>
+      </div>
+
+      <div class="gcs-section" style="margin-bottom:8px">
+        <div class="gcs-section-label">Verbal Response</div>
+        <div class="gcs-opts">
+          <button class="gcs-btn" data-g="rv" data-v="5" onclick="setRegGCS(this)">Oriented</button>
+          <button class="gcs-btn" data-g="rv" data-v="4" onclick="setRegGCS(this)">Confused</button>
+          <button class="gcs-btn" data-g="rv" data-v="3" onclick="setRegGCS(this)">Incoherent</button>
+          <button class="gcs-btn" data-g="rv" data-v="2" onclick="setRegGCS(this)">Incomprehensible</button>
+        </div>
+      </div>
+
+      <div class="gcs-section" style="margin-bottom:8px">
+        <div class="gcs-section-label">Motor Response</div>
+        <div class="gcs-opts">
+          <button class="gcs-btn" data-g="rm" data-v="6" onclick="setRegGCS(this)">Obeys orders</button>
+          <button class="gcs-btn" data-g="rm" data-v="5" onclick="setRegGCS(this)">Localizes pain</button>
+          <button class="gcs-btn" data-g="rm" data-v="4" onclick="setRegGCS(this)">Withdraws</button>
+          <button class="gcs-btn" data-g="rm" data-v="3" onclick="setRegGCS(this)">Decorticated</button>
+          <button class="gcs-btn" data-g="rm" data-v="2" onclick="setRegGCS(this)">Decerebrated</button>
+        </div>
+      </div>
+
+      <div class="gcs-result">
+        <div class="gcs-score-block">
+          <div class="gcs-score-num" id="reg-gcs-score-num">—</div>
+          <div class="gcs-score-label">E+V+M</div>
+        </div>
+        <div class="gcs-routing-block pending" id="reg-gcs-routing-block">
+          <div class="gcs-routing-title" id="reg-gcs-routing-title">Select all 3 components</div>
+          <div class="gcs-routing-sub" id="reg-gcs-routing-sub">Eye · Verbal · Motor</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="reg-section-label">Identity</div>
+      <div class="field-grid full">
+        <div class="field"><label class="field-label">Full name</label><input class="field-input" id="rg-name" placeholder="Full name"></div>
+      </div>
+      <div class="field-grid" style="margin-top:10px">
+        <div class="field"><label class="field-label">Date of birth</label><input class="field-input" id="rg-dob" type="date"></div>
+        <div class="field"><label class="field-label">National ID</label><input class="field-input" id="rg-nid" placeholder="ID number"></div>
+        <div class="field"><label class="field-label">Blood type</label>
+          <select class="field-select" id="rg-blood">
+            <option value="">—</option>
+            <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+            <option>O+</option><option>O−</option><option>AB+</option><option>AB−</option>
+          </select>
+        </div>
+        <div class="field"><label class="field-label">Sex</label>
+          <select class="field-select" id="rg-sex">
+            <option value="">—</option><option>Male</option><option>Female</option><option>Unknown</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:span 2"><label class="field-label">Allergies</label><input class="field-input" id="rg-allerg" placeholder="None known"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="reg-section-label">Current Visit</div>
+      <div class="field-grid full">
+        <div class="field"><label class="field-label">Chief complaint</label><textarea class="field-textarea" id="rg-reason" rows="2" placeholder="Reason for ER visit…" style="min-height:64px"></textarea></div>
+        <div class="field" style="margin-top:10px"><label class="field-label">Current medications</label><input class="field-input" id="rg-meds" placeholder="None"></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="reg-section-label">Emergency Contact</div>
+      <div class="field-grid">
+        <div class="field"><label class="field-label">Name</label><input class="field-input" id="rg-cname" placeholder="Name"></div>
+        <div class="field"><label class="field-label">Phone</label><input class="field-input" id="rg-cphone" placeholder="05XX XXX XXX"></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="reg-foot">
+    <button class="reg-submit" id="rg-submit">Register patient</button>
+    <button class="reg-cancel" id="rg-cancel">Cancel</button>
+  </div>
+</div>
+
+<!-- PIN Modal -->
+<div class="modal-bg" id="pin-modal">
+  <div class="pin-card">
+    <div class="pin-title">Doctor identification</div>
+    <div class="pin-sub" id="pin-sub">Enter your 4-digit PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-keys">
+      <div class="pkey" onclick="pinTap(1)">1</div><div class="pkey" onclick="pinTap(2)">2</div><div class="pkey" onclick="pinTap(3)">3</div>
+      <div class="pkey" onclick="pinTap(4)">4</div><div class="pkey" onclick="pinTap(5)">5</div><div class="pkey" onclick="pinTap(6)">6</div>
+      <div class="pkey" onclick="pinTap(7)">7</div><div class="pkey" onclick="pinTap(8)">8</div><div class="pkey" onclick="pinTap(9)">9</div>
+      <div class="pkey span2" onclick="closePin()">Cancel</div>
+      <div class="pkey" onclick="pinTap(0)">0</div>
+      <div class="pkey del" onclick="pinDel()">⌫</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Constants ── */
+const DOCTORS_PIN = {
+  '1234': {name:'Dr. Rédha', role:'ER Doctor'},
+  '5678': {name:'Dr. Mansouri', role:'Cardiologist'},
+  '9012': {name:'Dr. Meziani', role:'Neurologist'},
+};
+
+/* ── Data ── */
+let PATIENTS = [
+  {id:'e1',name:'Amara Boulmerka',nid:'198206123456789',sex:'Male',age:62,dob:'12 Apr 1962',blood:'A+',allergies:'None',meds:'Warfarin 5mg',reason:'Unconscious on arrival, head trauma',contact:'Farid B. · 0550 111 222',doctor:'Dr. Rédha (ER Doctor)',gcs:6,severity:'severe',time:nowStr(),status:'active',exams:[],notes:{interro:'',clin:'',notes:'',by:''},conclusion:'',decision:null,
+    medHistory:[
+      {date:'14 Jan 2024',service:'Neurologie',title:'TIA episode',detail:'Transient ischemic attack, resolved in 2h. MRI clear. Prescribed aspirin 100mg.'},
+      {date:'03 Aug 2022',service:'Cardiologie',title:'Atrial fibrillation',detail:'Paroxysmal AF, cardioverted. Started on Warfarin 5mg. Follow-up every 3 months.'},
+    ],
+    log:[{time:nowStr(),who:'Intern',what:'Registered — GCS 6 (Severe)'}]},
+  {id:'e2',name:'Sonia Dahmani',nid:'199009055678901',sex:'Female',age:34,dob:'05 Sep 1990',blood:'O−',allergies:'Penicillin',meds:'None',reason:'Severe chest pain, diaphoresis',contact:'Mehdi D. · 0661 333 444',doctor:'Dr. Rédha (ER Doctor)',gcs:11,severity:'moderate',time:nowStr(),status:'active',exams:[],notes:{interro:'',clin:'',notes:'',by:''},conclusion:'',decision:null,
+    medHistory:[],
+    log:[{time:nowStr(),who:'Intern',what:'Registered — GCS 11 (Moderate)'}]},
+];
+
+let NOTIF_MSGS = [
+  {id:'n1',from:'Ambulance',msg:'Incoming patient — GCS 6, Protection Civile, ETA 8 min. Male, ~62y, head trauma.',time:nowStr(),read:false},
+];
+
+let selectedId = null;
+let pinVal = '', pinAction = '';
+
+function nowStr(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+
+/* ── Severity helpers ── */
+function gcsSeverity(gcs){
+  if(gcs <= 8) return 'severe';
+  if(gcs <= 14) return 'moderate';
+  return 'normal';
+}
+function gcsChipClass(sev){
+  if(sev === 'severe') return 'severe';
+  if(sev === 'moderate') return 'moderate';
+  return 'normal';
+}
+function gcsLabel(gcs, sev){
+  const labels = {severe:'Severe',moderate:'Moderate',normal:'Normal'};
+  return `GCS ${gcs} — ${labels[sev]||sev}`;
+}
+
+/* ── Notif ── */
+function renderNotif(){
+  const dot = document.getElementById('notif-dot');
+  const unread = NOTIF_MSGS.filter(m => !m.read);
+  if(unread.length){ dot.classList.add('has-count'); dot.textContent = unread.length; }
+  else { dot.classList.remove('has-count'); dot.textContent = ''; }
+}
+
+/* ── Patient tabs ── */
+function renderTabs(){
+  const bar = document.getElementById('pt-tabs-bar');
+  const countEl = document.getElementById('pt-count');
+  bar.innerHTML = '';
+  countEl.textContent = PATIENTS.length + (PATIENTS.length === 1 ? ' patient' : ' patients');
+  bar.appendChild(countEl);
+  PATIENTS.forEach(p => {
+    const tab = document.createElement('div');
+    tab.className = 'pt-tab' + (p.id === selectedId ? ' active' : '');
+    const chipClass = gcsChipClass(p.severity || gcsSeverity(p.gcs));
+    tab.innerHTML = `<div class="pt-tab-name">${p.name.split(' ')[0]} ${p.name.split(' ').pop()}</div>
+      <div class="pt-tab-meta">
+        <span class="gcs-chip ${chipClass}">GCS ${p.gcs}</span>
+        <span class="pt-tab-time">${p.time}</span>
+      </div>`;
+    tab.onclick = () => selectPatient(p.id);
+    bar.appendChild(tab);
+  });
+}
+
+/* ── Select patient ── */
+function selectPatient(id){
+  selectedId = id;
+  renderTabs();
+  const p = PATIENTS.find(x => x.id === id);
+  if(!p) return;
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('pt-view').style.display = 'block';
+  renderHeader(p);
+  renderInfoGrid(p);
+  renderMedHistory(p);
+  renderExams(p);
+  populateConclusion(p);
+  renderDecision(p);
+  renderHistory(p);
+}
+
+/* ── Header ── */
+function renderHeader(p){
+  document.getElementById('ph-name').textContent = p.name;
+  document.getElementById('ph-meta').textContent = `DOB: ${p.dob} · ${p.blood} · ${p.doctor}`;
+  const badge = document.getElementById('ph-gcs-badge');
+  const sev = p.severity || gcsSeverity(p.gcs);
+  badge.textContent = `GCS ${p.gcs}`;
+  badge.className = `gcs-badge-large ${gcsChipClass(sev)}`;
+}
+
+/* ── Info grid ── */
+function renderInfoGrid(p){
+  const sev = p.severity || gcsSeverity(p.gcs);
+  const sevColors = {severe:'color:var(--red)',moderate:'color:var(--urg)',normal:'color:var(--stab)'};
+  document.getElementById('info-grid-body').innerHTML = `
+    <div class="info-item"><div class="info-label">Full name</div><div class="info-val bold">${p.name}</div></div>
+    <div class="info-item"><div class="info-label">GCS on arrival</div><div class="info-val bold" style="${sevColors[sev]||''}">${p.gcs}/15 — ${sev.charAt(0).toUpperCase()+sev.slice(1)}</div></div>
+    <div class="info-item"><div class="info-label">Date of birth</div><div class="info-val">${p.dob} (${p.age} y)</div></div>
+    <div class="info-item"><div class="info-label">Sex</div><div class="info-val">${p.sex||'—'}</div></div>
+    <div class="info-item"><div class="info-label">National ID</div><div class="info-val mono">${p.nid||'—'}</div></div>
+    <div class="info-item"><div class="info-label">Blood type</div><div class="info-val blood">${p.blood}</div></div>
+    <div class="info-item"><div class="info-label">Allergies</div><div class="info-val">${p.allergies||'None'}</div></div>
+    <div class="info-item"><div class="info-label">Medications</div><div class="info-val">${p.meds||'None'}</div></div>
+    <div class="info-item info-grid full"><div class="info-label">Chief complaint</div><div class="info-val">${p.reason}</div></div>
+    <div class="info-item info-grid full"><div class="info-label">Emergency contact</div><div class="info-val">${p.contact}</div></div>
+    <div class="info-item"><div class="info-label">Assigned doctor</div><div class="info-val">${p.doctor}</div></div>
+    <div class="info-item"><div class="info-label">Arrival time</div><div class="info-val mono">${p.time}</div></div>`;
+}
+
+/* ── Medical History ── */
+function renderMedHistory(p){
+  const body = document.getElementById('history-body');
+  const badge = document.getElementById('history-badge');
+  const hist = p.medHistory || [];
+  if(!hist.length){
+    badge.textContent = 'None on file';
+    body.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic">No prior history on file.</div>';
+    return;
+  }
+  badge.textContent = hist.length + (hist.length === 1 ? ' entry' : ' entries');
+  body.innerHTML = '';
+  hist.forEach(h => {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:8px 0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:3px';
+    row.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;font-weight:700;color:var(--text3);font-family:'JetBrains Mono',monospace">${h.date||'—'}</span>
+        ${h.service ? `<span style="font-size:10.5px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-br)">${h.service}</span>` : ''}
+      </div>
+      <div style="font-size:12.5px;font-weight:600;color:var(--text)">${h.title||'—'}</div>
+      ${h.detail ? `<div style="font-size:12px;color:var(--text2);line-height:1.5">${h.detail}</div>` : ''}`;
+    row.lastElementChild.style.borderBottom = 'none';
+    body.appendChild(row);
+  });
+  if(body.lastChild) body.lastChild.style.borderBottom = 'none';
+}
+
+/* ── Exams ── */
+function renderExams(p){
+  const list = document.getElementById('exam-list');
+  if(!p.exams.length){ list.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic">No exams requested yet.</div>'; return; }
+  list.innerHTML = '';
+  p.exams.forEach(ex => {
+    const row = document.createElement('div');
+    row.className = 'exam-row';
+    const deptClass = ex.dept === 'Radiology' ? 'rad' : 'bio';
+    row.innerHTML = `
+      <div class="exam-info">
+        <div class="exam-type">${ex.type}</div>
+        <div class="exam-sub">${ex.by} · ${ex.time}</div>
+      </div>
+      <span class="exam-dept-badge ${deptClass}">${ex.dept}</span>
+      <span class="exam-badge ${ex.status === 'done' ? 'done' : 'pending'}">${ex.status === 'done' ? 'Done' : 'Pending'}</span>`;
+    list.appendChild(row);
+  });
+}
+
+function openExamForm(){ document.getElementById('exam-form').style.display = 'flex'; document.getElementById('exam-form').style.flexDirection = 'column'; }
+function closeExamForm(){ document.getElementById('exam-form').style.display = 'none'; }
+
+function submitExam(docName){
+  const p = PATIENTS.find(x => x.id === selectedId); if(!p) return;
+  const sel = document.getElementById('ef-type');
+  const type = sel.value; if(!type) return;
+  const opt = sel.options[sel.selectedIndex];
+  const dept = opt.dataset.dept || 'Lab';
+  const notes = document.getElementById('ef-notes').value;
+  const ex = {type, dept, notes, by: docName || 'Dr.', time: nowStr(), status:'pending'};
+  p.exams.push(ex);
+  p.log.push({time:nowStr(),who:ex.by,what:`Requested ${type} (${dept})`});
+  renderExams(p);
+  renderHistory(p);
+  closeExamForm();
+  document.getElementById('ef-type').value = '';
+  document.getElementById('ef-notes').value = '';
+}
+
+/* ── Conclusion ── */
+function populateConclusion(p){
+  document.getElementById('conclusion-text').value = p.conclusion || '';
+}
+
+/* ── Verdict ── */
+let selectedVerdict = null;
+function selectVerdict(btn){
+  document.querySelectorAll('.verdict-opt').forEach(o => o.classList.remove('on','go','rean','fwd'));
+  btn.classList.add('on', btn.dataset.d);
+  selectedVerdict = btn.dataset.d;
+  const extra = document.getElementById('verdict-extra');
+  extra.classList.add('show');
+  document.getElementById('fwd-field').style.display = selectedVerdict === 'fwd' ? '' : 'none';
+}
+
+function renderDecision(p){
+  document.querySelectorAll('.verdict-opt').forEach(o => o.classList.remove('on','go','rean','fwd'));
+  document.getElementById('verdict-extra').classList.remove('show');
+  const fin = document.getElementById('verdict-finalized');
+  const btn = document.getElementById('verdict-submit-btn');
+  fin.style.display = 'none';
+  btn.style.display = '';
+  if(p.decision){
+    fin.style.display = 'block';
+    fin.className = 'verdict-finalized';
+    fin.textContent = `${p.decision.label}${p.decision.detail ? ' → ' + p.decision.detail : ''} · ${p.decision.by} at ${p.decision.time}`;
+    btn.style.display = 'none';
+  }
+}
+
+function finalizeDecision(docName){
+  if(!selectedVerdict) return;
+  const p = PATIENTS.find(x => x.id === selectedId); if(!p) return;
+  const labels = {go:'✓ Good to go — discharge',rean:'⟳ Réanimation',fwd:'→ Forward to service'};
+  const conclusion = document.getElementById('conclusion-text').value;
+  p.conclusion = conclusion;
+  let detail = '';
+  if(selectedVerdict === 'fwd') detail = document.getElementById('fwd-service').value;
+  p.decision = {d: selectedVerdict, label: labels[selectedVerdict], detail, by: docName, time: nowStr()};
+  const what = `Verdict: ${labels[selectedVerdict]}${detail ? ' → ' + detail : ''}` + (conclusion ? ` | Conclusion: ${conclusion.slice(0,60)}${conclusion.length>60?'…':''}` : '');
+  p.log.push({time:nowStr(),who:docName,what});
+  document.getElementById('verdict-author').textContent = docName;
+  renderDecision(p);
+  renderHistory(p);
+}
+
+/* ── History ── */
+function renderHistory(p){
+  const body = document.getElementById('consult-history-body');
+  const badge = document.getElementById('history-count');
+  if(!p.log || !p.log.length){ body.innerHTML='<div style="font-size:12px;color:var(--text3);font-style:italic">No history yet.</div>'; badge.textContent='0'; return; }
+  badge.textContent = p.log.length;
+  body.innerHTML = '';
+  [...p.log].reverse().forEach(e => {
+    const row = document.createElement('div');
+    row.className = 'log-entry';
+    row.innerHTML = `<div class="log-time">${e.time}</div><div class="log-who">${e.who}</div><div class="log-what">${e.what}</div>`;
+    body.appendChild(row);
+  });
+}
+
+/* ── Log button ── */
+document.getElementById('btn-log').addEventListener('click', () => {
+  const p = PATIENTS.find(x => x.id === selectedId); if(!p) return;
+  alert(p.log.map(e => `[${e.time}] ${e.who}: ${e.what}`).join('\n'));
+});
+
+/* ── PIN ── */
+function openPin(action){
+  pinAction = action; pinVal = ''; updatePinDots();
+  const subs = {exam:'Authorise exam request',decision:'Confirm final verdict'};
+  document.getElementById('pin-sub').textContent = subs[action] || 'Enter your 4-digit PIN';
+  document.getElementById('pin-modal').classList.add('show');
+}
+function closePin(){ document.getElementById('pin-modal').classList.remove('show'); }
+function pinTap(n){
+  if(pinVal.length >= 4) return;
+  pinVal += n; updatePinDots();
+  if(pinVal.length === 4) setTimeout(() => { processPinAction(); closePin(); }, 280);
+}
+function pinDel(){ pinVal = pinVal.slice(0,-1); updatePinDots(); }
+function updatePinDots(){ for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('on', i < pinVal.length); }
+function processPinAction(){
+  const doc = DOCTORS_PIN[pinVal];
+  const docName = doc ? doc.name + ' (' + doc.role + ')' : 'Unknown (PIN: '+pinVal+')';
+  if(pinAction === 'exam') openExamForm();
+  else if(pinAction === 'decision') finalizeDecision(docName);
+}
+
+/* ── Register ── */
+let regGcsE=0, regGcsV=0, regGcsM=0;
+
+function setRegGCS(btn){
+  const g = btn.dataset.g;
+  const wasOn = btn.classList.contains('on');
+  document.querySelectorAll(`.gcs-btn[data-g="${g}"]`).forEach(b => b.classList.remove('on'));
+  if(!wasOn){
+    btn.classList.add('on');
+    if(g==='re') regGcsE = parseInt(btn.dataset.v);
+    else if(g==='rv') regGcsV = parseInt(btn.dataset.v);
+    else regGcsM = parseInt(btn.dataset.v);
+  } else {
+    if(g==='re') regGcsE = 0;
+    else if(g==='rv') regGcsV = 0;
+    else regGcsM = 0;
+  }
+  updateRegGCS();
+}
+
+function updateRegGCS(){
+  const numEl = document.getElementById('reg-gcs-score-num');
+  const routingBlock = document.getElementById('reg-gcs-routing-block');
+  const routingTitle = document.getElementById('reg-gcs-routing-title');
+  const routingSub = document.getElementById('reg-gcs-routing-sub');
+  if(!regGcsE || !regGcsV || !regGcsM){
+    numEl.textContent='—'; numEl.className='gcs-score-num';
+    routingBlock.className='gcs-routing-block pending';
+    routingTitle.textContent='Select all 3 components';
+    routingSub.textContent='Eye · Verbal · Motor';
+    return;
+  }
+  const score = regGcsE+regGcsV+regGcsM;
+  numEl.textContent = score;
+  if(score===15){ numEl.className='gcs-score-num normal'; routingBlock.className='gcs-routing-block office'; routingTitle.textContent='✓ Doctor\'s Office'; routingSub.textContent='GCS 15 — Normal neurological status'; }
+  else if(score>=9){ numEl.className='gcs-score-num moderate'; routingBlock.className='gcs-routing-block er'; routingTitle.textContent='→ ER Déchocage'; routingSub.textContent=`GCS ${score}/15 — Moderate impairment`; }
+  else { numEl.className='gcs-score-num severe'; routingBlock.className='gcs-routing-block er'; routingTitle.textContent='⚠ ER Déchocage'; routingSub.textContent=`GCS ${score}/15 — Severe, immediate care required`; }
+}
+
+document.getElementById('btn-register').addEventListener('click', () => {
+  document.getElementById('reg-panel').classList.add('open');
+});
+document.getElementById('reg-close').addEventListener('click', closeReg);
+document.getElementById('rg-cancel').addEventListener('click', closeReg);
+function closeReg(){ document.getElementById('reg-panel').classList.remove('open'); }
+
+document.getElementById('rg-submit').addEventListener('click', () => {
+  const name = document.getElementById('rg-name').value.trim();
+  if(!name){ document.getElementById('rg-name').style.borderColor = 'var(--red)'; return; }
+  if(!regGcsE || !regGcsV || !regGcsM){ alert('Complete the Glasgow Coma Scale first.'); return; }
+  const gcs = regGcsE + regGcsV + regGcsM;
+  const sev = gcsSeverity(gcs);
+  const p = {
+    id: 'e'+Date.now(), name,
+    dob: document.getElementById('rg-dob').value || '—',
+    nid: document.getElementById('rg-nid').value || '—',
+    sex: document.getElementById('rg-sex').value || '—',
+    blood: document.getElementById('rg-blood').value || '—',
+    allergies: document.getElementById('rg-allerg').value || 'None',
+    meds: document.getElementById('rg-meds').value || 'None',
+    reason: document.getElementById('rg-reason').value || '—',
+    contact: (document.getElementById('rg-cname').value || '—') + ' · ' + (document.getElementById('rg-cphone').value || '—'),
+    doctor: '—',
+    gcs, severity: sev, age: '—',
+    time: nowStr(), status: 'active',
+    exams: [], notes: {interro:'',clin:'',notes:'',by:''}, conclusion: '', decision: null,
+    log: [{time:nowStr(),who:'Intern',what:`Registered — GCS ${gcs} (${sev.charAt(0).toUpperCase()+sev.slice(1)})`}],
+  };
+  PATIENTS.push(p);
+  renderTabs();
+  closeReg();
+  selectPatient(p.id);
+  // reset form
+  ['rg-name','rg-dob','rg-nid','rg-allerg','rg-meds','rg-cname','rg-cphone'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('rg-reason').value = '';
+  regGcsE=0; regGcsV=0; regGcsM=0;
+  document.querySelectorAll('.gcs-btn[data-g^="r"]').forEach(b => b.classList.remove('on'));
+  updateRegGCS();
+});
+
+/* ── Init ── */
+renderTabs();
+renderNotif();
+if(PATIENTS.length) selectPatient(PATIENTS[0].id);
+</script>
+</body>
+</html>
