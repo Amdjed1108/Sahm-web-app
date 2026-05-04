@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAHM — Specialist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#EAECF0;--surface:#fff;--s2:#F9FAFB;--s3:#F3F4F6;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--text2:#6B7280;--text3:#9CA3AF;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --shadow-md:0 8px 24px rgba(0,0,0,.1),0 3px 8px rgba(0,0,0,.06);
+  --shadow-xl:0 20px 60px rgba(0,0,0,.18),0 8px 20px rgba(0,0,0,.08);
+  --crit:#DC2626;--crit-mid:#EF4444;--crit-bg:#FEF2F2;--crit-br:#FECACA;
+  --urg:#D97706;--urg-mid:#F59E0B;--urg-bg:#FFFBEB;--urg-br:#FDE68A;
+  --stab:#059669;--stab-mid:#10B981;--stab-bg:#ECFDF5;--stab-br:#A7F3D0;
+  --blue:#2563EB;--blue-bg:#EFF6FF;--blue-br:#BFDBFE;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;--purple-br:#DDD6FE;
+  --r:12px;--r-sm:8px;--r-lg:18px;
+}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;height:62px;background:var(--surface);border-bottom:1.5px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;padding:0 24px 0 0;gap:0;z-index:50}
+.nav-left-area{width:300px;flex-shrink:0;display:flex;align-items:center;padding:0 24px;gap:12px;border-right:1.5px solid var(--border);height:100%}
+.nav-logo{font-size:16px;font-weight:700;letter-spacing:2px}
+.nav-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.nav-role{font-size:12px;font-weight:500;color:var(--text2)}
+.nav-right-area{flex:1;display:flex;align-items:center;padding:0 24px;gap:14px}
+.nav-spacer{flex:1}
+.nav-user{font-size:13px;font-weight:600}
+.btn-ghost{height:32px;padding:0 12px;background:var(--surface);color:var(--text2);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .14s}
+.btn-ghost:hover{background:var(--s3)}
+
+/* LAYOUT */
+.layout{position:fixed;top:62px;left:0;right:0;bottom:0;display:flex}
+
+/* LEFT PANEL */
+.left-panel{width:300px;flex-shrink:0;background:var(--surface);border-right:1.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.left-header{padding:22px 22px 16px;border-bottom:1.5px solid var(--border);flex-shrink:0}
+.left-header-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.left-header-sub{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px}
+.specialty-pill{font-size:11px;font-weight:600;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br);border-radius:999px;padding:2px 8px}
+
+.left-scroll{flex:1;overflow-y:auto;padding:10px}
+.left-scroll::-webkit-scrollbar{width:4px}
+.left-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.req-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);box-shadow:var(--shadow-sm);padding:13px 14px;cursor:pointer;transition:box-shadow .14s,transform .14s;position:relative;overflow:hidden;margin-bottom:6px}
+.req-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.req-card.border-crit::before{background:var(--crit)}
+.req-card.border-urg::before{background:var(--urg)}
+.req-card.border-stab::before{background:var(--stab)}
+.req-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.req-card.active{border-color:var(--purple);box-shadow:0 0 0 2px rgba(124,58,237,.15),var(--shadow)}
+.req-card-title{font-size:13px;font-weight:700;margin-bottom:5px}
+.req-card-meta{font-size:11.5px;color:var(--text3)}
+.badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;border:1.5px solid}
+.badge.crit{background:var(--crit-bg);color:var(--crit);border-color:var(--crit-br)}
+.badge.urg{background:var(--urg-bg);color:var(--urg);border-color:var(--urg-br)}
+.badge.stab{background:var(--stab-bg);color:var(--stab);border-color:var(--stab-br)}
+.badge.purple{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-br)}
+.badge.green{background:var(--stab-bg);color:var(--stab);border-color:var(--stab-br)}
+.badge.grey{background:var(--s3);color:var(--text2);border-color:var(--border)}
+
+.completed-section{background:var(--s2);border-top:1.5px solid var(--border);padding:12px 10px;flex-shrink:0}
+.completed-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;padding:0 4px}
+.comp-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.comp-card-info{flex:1}
+.comp-card-name{font-size:13px;font-weight:600}
+.comp-card-meta{font-size:11.5px;color:var(--text3)}
+
+/* RIGHT PANEL */
+.right-panel{flex:1;overflow-y:auto;padding:36px}
+.right-panel::-webkit-scrollbar{width:6px}
+.right-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.rp-heading{font-size:20px;font-weight:700;margin-bottom:8px}
+.rp-context{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:28px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 18px}
+.rp-context strong{color:var(--text)}
+.doctor-note{font-style:italic;color:var(--text3);margin-top:6px;font-size:12.5px}
+
+/* PROGRESS STRIP */
+.progress-strip{display:flex;gap:4px;margin-bottom:28px}
+.step{flex:1;text-align:center;padding:10px 8px;border-radius:var(--r-sm);font-size:12px;font-weight:600;border:1.5px solid var(--border);background:var(--s3);color:var(--text3);transition:all .2s}
+.step.done{background:var(--stab-bg);color:var(--stab);border-color:var(--stab-br)}
+.step.active{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-br)}
+.step-num{display:block;font-size:10px;font-weight:700;margin-bottom:2px;opacity:.6}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--r);padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:18px;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:var(--blue-bg)}
+.upload-zone svg{margin-bottom:12px;opacity:.4}
+.upload-zone:hover svg,.upload-zone.drag svg{opacity:.7}
+.upload-zone-title{font-size:14px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.upload-zone-sub{font-size:12px;color:var(--text3)}
+
+/* FILE PREVIEW */
+.file-preview{display:flex;align-items:center;gap:12px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 16px;margin-bottom:18px}
+.file-icon{width:36px;height:36px;background:var(--blue-bg);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.file-info{flex:1}
+.file-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.file-size{font-size:11.5px;color:var(--text3)}
+
+/* AI DRAFT BOX */
+.ai-box{background:var(--purple-bg);border:1.5px solid var(--purple-br);border-radius:var(--r);padding:20px;margin-bottom:18px}
+.ai-label{font-size:10.5px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.ai-textarea{width:100%;min-height:140px;padding:12px 14px;background:var(--surface);border:1.5px solid var(--purple-br);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:var(--text);line-height:1.7;resize:vertical;outline:none;transition:border .2s,box-shadow .2s}
+.ai-textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+
+/* PATIENT INFO GRID (specialist) */
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.pt-cell{padding:12px 16px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.pt-cell:nth-child(even){border-right:none}
+.pt-cell:nth-last-child(-n+2){border-bottom:none}
+.pt-cell.full{grid-column:1/-1;border-right:none}
+.pt-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:3px}
+.pt-val{font-size:14px;font-weight:500;color:var(--text)}
+.pt-val.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+
+/* SECTION HEADER */
+.spec-sec{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.spec-sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.notes-ta{width:100%;min-height:80px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);line-height:1.6;resize:vertical;outline:none;transition:border .2s,box-shadow .2s;margin-bottom:18px}
+.notes-ta:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:10px}
+.btn-validate{flex:1;height:42px;background:var(--purple);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .14s,transform .1s;box-shadow:0 4px 14px rgba(124,58,237,.3)}
+.btn-validate:hover{background:#6d28d9;transform:translateY(-1px);box-shadow:0 8px 22px rgba(124,58,237,.4)}
+.btn-rerun{height:42px;padding:0 20px;background:var(--surface);color:var(--text2);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .14s,color .14s}
+.btn-rerun:hover{background:var(--s3);color:var(--text)}
+.btn-flag{height:42px;padding:0 20px;background:var(--urg-bg);color:var(--urg);border:1.5px solid var(--urg-br);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .14s}
+.btn-flag:hover{background:var(--urg-br)}
+.btn-upload{width:100%;height:42px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .14s,transform .1s;box-shadow:0 4px 14px rgba(37,99,235,.3)}
+.btn-upload:hover{background:#1d4ed8;transform:translateY(-1px)}
+
+/* EMPTY STATE */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;text-align:center;color:var(--text3)}
+.empty-state svg{opacity:.3;margin-bottom:16px}
+.empty-state h3{font-size:16px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.empty-state p{font-size:13px}
+
+/* AI PROCESSING ANIMATION */
+.ai-processing{display:flex;flex-direction:column;align-items:center;gap:12px;padding:30px;background:var(--purple-bg);border:1.5px solid var(--purple-br);border-radius:var(--r);margin-bottom:18px}
+.ai-proc-label{font-size:13px;font-weight:600;color:var(--purple)}
+.ai-proc-sub{font-size:12px;color:var(--text3)}
+.dots{display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--purple);animation:dotBounce 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes dotBounce{0%,80%,100%{transform:scale(0);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal{width:420px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:30px;box-shadow:var(--shadow-xl)}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:6px}
+.modal-body{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6}
+.modal-ta{width:100%;min-height:100px;padding:10px 12px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;resize:vertical;outline:none;margin-bottom:16px;transition:border .2s}
+.modal-ta:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+.modal-actions{display:flex;gap:10px}
+.btn-modal-primary{flex:1;height:38px;background:var(--purple);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .14s}
+.btn-modal-primary:hover{background:#6d28d9}
+.btn-modal-cancel{height:38px;padding:0 18px;background:var(--surface);color:var(--text2);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;cursor:pointer;transition:background .14s}
+.btn-modal-cancel:hover{background:var(--s3)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left-area">
+    <span class="nav-logo">SAHM</span>
+    <div class="nav-sep"></div>
+    <span class="nav-role">Specialist</span>
+  </div>
+  <div class="nav-right-area">
+    <div class="nav-spacer"></div>
+    <span class="nav-user">Dr. Mansouri</span>
+    <button class="btn-ghost">Sign out</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-header">
+      <div class="left-header-title">Pending requests</div>
+      <div class="left-header-sub">
+        <span id="req-count">3 requests</span>
+        <span class="specialty-pill">Radiology</span>
+      </div>
+    </div>
+    <div class="left-scroll" id="req-list"></div>
+    <div class="completed-section">
+      <div class="completed-section-title">Completed today</div>
+      <div id="comp-list"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel" id="right-panel">
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <h3>Select a request</h3>
+      <p>Choose a pending exam request from the list</p>
+    </div>
+  </div>
+</div>
+
+<!-- RE-RUN MODAL -->
+<div class="modal-overlay" id="rerun-modal">
+  <div class="modal">
+    <div class="modal-title">Re-run AI analysis</div>
+    <div class="modal-body">Describe what was wrong so the AI can improve its output. Your feedback is logged and appended to the next prompt.</div>
+    <textarea class="modal-ta" id="rerun-reason" placeholder="e.g. The AI missed the pleural effusion on the right side…"></textarea>
+    <div class="modal-actions">
+      <button class="btn-modal-primary" onclick="submitRerun()">Re-run analysis</button>
+      <button class="btn-modal-cancel" id="rerun-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const REQUESTS=[
+  {
+    id:'r1',patientName:'Amira Benali',examType:'Chest X-ray',urgency:'critical',status:'pending',
+    age:34,bloodType:'O+',allergies:'Penicillin',room:'ER-A',
+    doctorNote:'Suspected pneumothorax, significant respiratory distress. Sat 91%.',
+    requestedAt:'10:38',requestedBy:'Dr. Rédha',specialty:'radiology'
+  },
+  {
+    id:'r2',patientName:'Youcef Rahmani',examType:'ECG',urgency:'urgent',status:'draft',
+    age:67,bloodType:'AB+',allergies:'None',room:'ER-A',
+    doctorNote:'Patient reports palpitations and dizziness since this morning. Hx of hypertension.',
+    requestedAt:'10:05',requestedBy:'Dr. Rédha',specialty:'cardiology',
+    fileName:'ECG_Rahmani_2026-05-01.pdf',fileSize:'2.4 MB',aiRuns:1,
+    aiSummary:'ECG shows irregular rhythm consistent with atrial fibrillation. Ventricular rate approximately 115 bpm (tachycardic). No ST-segment elevation identified. PR interval variable with absent P waves replaced by fibrillatory activity. QRS morphology within normal limits. Recommend cardiology consultation and initiation of rate control therapy. CHA₂DS₂-VASc score assessment warranted for anticoagulation decision.'
+  },
+  {
+    id:'r3',patientName:'Sara Bouhired',examType:'Brain MRI',urgency:'critical',status:'pending',
+    age:45,bloodType:'O-',allergies:'Aspirin, NSAIDs',room:'ER-B',
+    doctorNote:'Post-fall head trauma, GCS 13. Rule out intracranial haemorrhage. Patient on Warfarin.',
+    requestedAt:'11:20',requestedBy:'Dr. Meziani',specialty:'neurology'
+  },
+];
+
+const COMPLETED=[
+  {id:'c1',patientName:'Omar Tlemcani',examType:'Chest X-ray',urgency:'stable',validatedAt:'09:15'}
+];
+
+let selectedId=null;
+
+function triageClass(u){return u==='critical'?'crit':u==='urgent'?'urg':'stab'}
+function triageLabel(u){return u.charAt(0).toUpperCase()+u.slice(1)}
+
+function renderLeftPanel(){
+  // Requests
+  const list=document.getElementById('req-list');
+  list.innerHTML='';
+  REQUESTS.forEach(r=>{
+    const tc=triageClass(r.urgency);
+    const card=document.createElement('div');
+    card.className=`req-card border-${tc}${r.id===selectedId?' active':''}`;
+    card.innerHTML=`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+        <span class="req-card-title" style="flex:1">${r.patientName}</span>
+        <span class="badge ${tc}">${triageLabel(r.urgency)}</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px">${r.examType}</div>
+      <div class="req-card-meta">${r.requestedBy} &middot; ${r.requestedAt}</div>`;
+    card.onclick=()=>{selectedId=r.id;renderLeftPanel();renderRight(r)};
+    list.appendChild(card);
+  });
+  // Completed
+  const comp=document.getElementById('comp-list');
+  comp.innerHTML=COMPLETED.map(c=>`
+    <div class="comp-card">
+      <div class="comp-card-info">
+        <div class="comp-card-name">${c.patientName}</div>
+        <div class="comp-card-meta">${c.examType} &middot; ${c.validatedAt}</div>
+      </div>
+      <span class="badge green">Validated</span>
+    </div>`).join('');
+}
+
+function renderRight(r){
+  const rp=document.getElementById('right-panel');
+  if(r.status==='pending') renderPending(r,rp);
+  else if(r.status==='draft') renderDraft(r,rp);
+}
+
+function patientGrid(r){
+  return `
+    <div class="spec-sec">Patient information</div>
+    <div class="pt-grid">
+      <div class="pt-cell"><div class="pt-label">Patient</div><div class="pt-val">${r.patientName}</div></div>
+      <div class="pt-cell"><div class="pt-label">Age</div><div class="pt-val">${r.age} years</div></div>
+      <div class="pt-cell"><div class="pt-label">Blood type</div><div class="pt-val mono">${r.bloodType}</div></div>
+      <div class="pt-cell"><div class="pt-label">Room</div><div class="pt-val mono">${r.room}</div></div>
+      <div class="pt-cell"><div class="pt-label">Allergies</div><div class="pt-val">${r.allergies}</div></div>
+      <div class="pt-cell"><div class="pt-label">Requested by</div><div class="pt-val">${r.requestedBy}</div></div>
+      <div class="pt-cell full"><div class="pt-label">Doctor's note</div><div class="pt-val" style="font-style:italic;color:var(--text2)">"${r.doctorNote}"</div></div>
+    </div>`;
+}
+
+function renderPending(r,rp){
+  rp.innerHTML=`
+    <div class="rp-heading">${r.patientName} &mdash; ${r.examType}</div>
+    ${patientGrid(r)}
+
+    <div class="spec-sec">Upload &amp; analysis</div>
+    <div class="progress-strip">
+      <div class="step done"><span class="step-num">1</span>Received</div>
+      <div class="step active"><span class="step-num">2</span>Upload</div>
+      <div class="step"><span class="step-num">3</span>AI analysis</div>
+      <div class="step"><span class="step-num">4</span>Validate</div>
+    </div>
+
+    <div class="upload-zone" id="upload-zone" onclick="triggerUpload()">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div class="upload-zone-title">Drop file here or click to browse</div>
+      <div class="upload-zone-sub">PDF, JPEG, PNG, DICOM &mdash; max 50 MB</div>
+    </div>
+    <input type="file" id="file-input" style="display:none" accept=".pdf,.jpg,.jpeg,.png">
+
+    <label class="notes-label">Specialist notes (optional)</label>
+    <textarea class="notes-ta" placeholder="Add any observations before uploading…"></textarea>
+
+    <button class="btn-upload" id="btn-upload-main" onclick="simulateUpload('${r.id}')">Upload &amp; run AI analysis</button>
+  `;
+
+  const zone=rp.querySelector('.upload-zone');
+  zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag')});
+  zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+  zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag')});
+}
+
+function triggerUpload(){document.getElementById('file-input')&&document.getElementById('file-input').click()}
+
+function simulateUpload(reqId){
+  const r=REQUESTS.find(x=>x.id===reqId);
+  if(!r)return;
+  const rp=document.getElementById('right-panel');
+  // Show progress: upload → AI processing
+  rp.querySelector('.btn-upload-main||#btn-upload-main');
+  const btn=rp.querySelector('#btn-upload-main');
+  if(btn){btn.disabled=true;btn.textContent='Uploading…'}
+
+  setTimeout(()=>{
+    // Show AI processing state
+    rp.innerHTML=`
+      <div class="rp-heading">${r.patientName} &mdash; ${r.examType}</div>
+      ${patientGrid(r)}
+      <div class="spec-sec">Upload &amp; analysis</div>
+      <div class="progress-strip">
+        <div class="step done"><span class="step-num">1</span>Received</div>
+        <div class="step done"><span class="step-num">2</span>Upload</div>
+        <div class="step active"><span class="step-num">3</span>AI analysis</div>
+        <div class="step"><span class="step-num">4</span>Validate</div>
+      </div>
+      <div class="ai-processing">
+        <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+        <div class="ai-proc-label">Gemini is analysing the file…</div>
+        <div class="ai-proc-sub">This usually takes 15–30 seconds</div>
+      </div>`;
+    // Simulate AI response
+    setTimeout(()=>{
+      r.status='draft';
+      r.fileName='File_'+r.patientName.replace(' ','_')+'_2026-05-01.pdf';
+      r.fileSize='3.1 MB';r.aiRuns=1;
+      r.aiSummary='[AI analysis complete] Imaging reveals bilateral ground-glass opacification in the lower lobes with a right-sided pleural effusion. Findings are consistent with pneumonia with possible early ARDS. No pneumothorax identified on this view. Recommend urgent clinical correlation, supplemental oxygen optimisation, and consideration of broad-spectrum antibiotic therapy. Follow-up CT recommended within 24 hours if condition deteriorates.';
+      renderLeft();renderDraft(r,rp);
+    },2000);
+  },1200);
+}
+
+function renderDraft(r,rp){
+  rp.innerHTML=`
+    <div class="rp-heading">${r.patientName} &mdash; ${r.examType}</div>
+    ${patientGrid(r)}
+
+    <div class="spec-sec">Review &amp; validate</div>
+    <div class="progress-strip">
+      <div class="step done"><span class="step-num">1</span>Received</div>
+      <div class="step done"><span class="step-num">2</span>Upload</div>
+      <div class="step done"><span class="step-num">3</span>AI analysis</div>
+      <div class="step active"><span class="step-num">4</span>Validate</div>
+    </div>
+
+    <div class="file-preview">
+      <div class="file-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="file-info">
+        <div class="file-name">${r.fileName||'result.pdf'}</div>
+        <div class="file-size">${r.fileSize||'—'} &middot; Run #${r.aiRuns||1}</div>
+      </div>
+      <span class="badge purple">AI draft</span>
+    </div>
+
+    <div class="ai-box">
+      <div class="ai-label">AI draft &mdash; edit before validating</div>
+      <textarea class="ai-textarea" id="ai-edit">${r.aiSummary}</textarea>
+    </div>
+
+    <label class="notes-label">Specialist notes</label>
+    <textarea class="notes-ta" id="spec-notes" placeholder="Add your professional assessment…"></textarea>
+
+    <div class="action-row">
+      <button class="btn-validate" onclick="validate('${r.id}')">Validate &amp; send to doctor</button>
+      <button class="btn-rerun" onclick="document.getElementById('rerun-modal').classList.add('show');window._rerunId='${r.id}'">Re-run AI</button>
+      <button class="btn-flag" onclick="flagInconclusive('${r.id}')">Flag inconclusive</button>
+    </div>
+  `;
+}
+
+function validate(reqId){
+  const r=REQUESTS.find(x=>x.id===reqId);if(!r)return;
+  const edited=document.getElementById('ai-edit');
+  if(edited)r.aiSummary=edited.value;
+  r.status='validated';
+  COMPLETED.unshift({id:'c'+Date.now(),patientName:r.patientName,examType:r.examType,urgency:r.urgency,validatedAt:new Date().toTimeString().slice(0,5)});
+  const idx=REQUESTS.findIndex(x=>x.id===reqId);
+  if(idx>-1)REQUESTS.splice(idx,1);
+  selectedId=null;
+  renderLeft();
+  document.getElementById('right-panel').innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;text-align:center;gap:12px">
+      <div style="width:52px;height:52px;background:var(--stab-bg);border-radius:50%;display:flex;align-items:center;justify-content:center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--stab)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:16px;font-weight:700;color:var(--text)">Result validated</div>
+      <div style="font-size:13px;color:var(--text3)">Dr. Rédha will see this instantly</div>
+    </div>`;
+}
+
+function flagInconclusive(reqId){
+  const r=REQUESTS.find(x=>x.id===reqId);if(!r)return;
+  r.status='inconclusive';
+  alert('Result flagged as inconclusive. Doctor will be notified with a warning label.');
+  // In real app: updateDoc with flaggedInconclusive:true
+}
+
+function submitRerun(){
+  const reason=document.getElementById('rerun-reason').value.trim();
+  const reqId=window._rerunId;
+  const r=REQUESTS.find(x=>x.id===reqId);
+  if(!r)return;
+  document.getElementById('rerun-modal').classList.remove('show');
+  document.getElementById('rerun-reason').value='';
+  r.aiRuns=(r.aiRuns||1)+1;
+  if(!r.rerunReasons)r.rerunReasons=[];
+  r.rerunReasons.push(reason);
+  // Show processing state then return to draft
+  renderDraft(r,document.getElementById('right-panel'));
+  setTimeout(()=>{
+    r.aiSummary=r.aiSummary+'\n\n[Re-run #'+r.aiRuns+' — updated after specialist feedback: "'+reason+'"]';
+    renderDraft(r,document.getElementById('right-panel'));
+  },2500);
+}
+
+function renderLeft(){
+  document.getElementById('req-count').textContent=REQUESTS.length+' request'+(REQUESTS.length!==1?'s':'');
+  renderLeftPanel();
+}
+
+document.getElementById('rerun-cancel').onclick=()=>document.getElementById('rerun-modal').classList.remove('show');
+document.getElementById('rerun-modal').onclick=function(e){if(e.target===this)this.classList.remove('show')};
+
+renderLeftPanel();
+</script>
+</body>
+</html>
