@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc,  } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDafHuE8M9Cf_i53Ak-rE5fQD5Fh56hDIg",
@@ -15,8 +15,7 @@ export const db = getFirestore(app);
 
 
 // create user(staff)
-import { db } from "./firebase.js";
-import { doc, setDoc } from "firebase/firestore";
+
 
 export async function createUserProfile(user) {
   await setDoc(doc(db, "users", user.uid), {
@@ -27,7 +26,7 @@ export async function createUserProfile(user) {
 }
 
 // read user data
-import { db } from "./firebase.js";
+
 import { doc, getDoc } from "firebase/firestore";
 
 export async function getUserProfile(uid) {
@@ -36,7 +35,7 @@ export async function getUserProfile(uid) {
 }
 
 //real-time listener
-import { db } from "./firebase.js";
+
 import { doc, onSnapshot } from "firebase/firestore";
 
 export function listenUser(uid, callback) {
@@ -58,4 +57,5 @@ import { signInWithCustomToken } from "firebase/auth";
 
 await signInWithCustomToken(auth, token);
 
-// pin
+// sign with custom token
+signInWithCustomToken(auth, token)
