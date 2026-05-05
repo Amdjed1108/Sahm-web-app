@@ -6,6 +6,13 @@
 <title>SAHM — Specialist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  import { requireAuth } from "/sahm-app/backend/auth.js";
+    requireAuth(); // redirects to auth.html if not logged in
+    // then read role from localStorage:
+    const role = localStorage.getItem("role");
+    const hospitalId = localStorage.getItem("hospitalId");</script>
+</script>
 <style>
     
 :root{

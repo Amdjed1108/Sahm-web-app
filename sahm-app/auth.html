@@ -6,6 +6,13 @@
 <title>SAHM — Sign In</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  import { requireAuth } from "/sahm-app/backend/auth.js";
+    requireAuth(); // redirects to auth.html if not logged in
+    // then read role from localStorage:
+    const role = localStorage.getItem("role");
+    const hospitalId = localStorage.getItem("hospitalId");</script>
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -443,24 +450,32 @@ input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
   sidEl.addEventListener('input',()=>fieldError(sidEl,false));
   pwI.addEventListener('input',()=>fieldError(pwI,false));
   
-  sb.onclick=async()=>{
-    const id=sidEl.value.trim(), pw=pwI.value;
-    /* Clear previous state */
-    errEl.classList.remove('show');
-    fieldError(sidEl,false); fieldError(pwI,false);
-  
-    /* Validate empty */
-    let hasErr=false;
-    if (!id){ fieldError(sidEl,true); hasErr=true; }
-    if (!pw){ fieldError(pwI,true);  hasErr=true; }
-    if (hasErr){ showErr(!id&&!pw?'Staff ID and password are required.':!id?'Staff ID is required.':'Password is required.'); return; }
-  
-    sb.classList.add('loading'); sb.disabled=true;
-    await new Promise(r=>setTimeout(r,1400));
-    sb.classList.remove('loading'); sb.disabled=false;
-    fieldError(sidEl,true); fieldError(pwI,true);
-    showErr('Incorrect Staff ID or password. Please try again.');
-  };
+// REPLACE the sb.onclick block with this:
+import { signIn } from "/sahm-app/backend/auth.js";
+
+sb.onclick = async () => {
+  const id = sidEl.value.trim(), pw = pwI.value;
+  errEl.classList.remove("show");
+  fieldError(sidEl, false); fieldError(pwI, false);
+
+  let hasErr = false;
+  if (!id) { fieldError(sidEl, true); hasErr = true; }
+  if (!pw) { fieldError(pwI,  true);  hasErr = true; }
+  if (hasErr) { showErr(!id && !pw ? "Staff ID and password are required." : !id ? "Staff ID is required." : "Password is required."); return; }
+
+  sb.classList.add("loading"); sb.disabled = true;
+  try {
+    const redirect = await signIn(id, pw);
+    window.location.href = redirect;          // → role-based page
+  } catch (e) {
+    sb.classList.remove("loading"); sb.disabled = false;
+    fieldError(sidEl, true); fieldError(pwI, true);
+    const msg = e.code === "auth/invalid-credential"
+      ? "Incorrect Staff ID or password."
+      : e.message;
+    showErr(msg);
+  }
+};
   
   function showErr(m){
     errEl.textContent = m;
