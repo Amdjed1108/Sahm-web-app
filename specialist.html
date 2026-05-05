@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAHM — Specialist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  import { requireAuth } from "/sahm-app/backend/auth.js";
+    requireAuth(); // redirects to auth.html if not logged in
+    // then read role from localStorage:
+    const role = localStorage.getItem("role");
+    const hospitalId = localStorage.getItem("hospitalId");</script>
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#EAECF0;--surface:#fff;--s2:#F9FAFB;--s3:#F3F4F6;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--text2:#6B7280;--text3:#9CA3AF;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 4px 12px rgba(0,0,0,.08),0 2px 4px rgba(0,0,0,.04);
+  --shadow-md:0 8px 24px rgba(0,0,0,.1),0 3px 8px rgba(0,0,0,.06);
+  --shadow-xl:0 20px 60px rgba(0,0,0,.18),0 8px 20px rgba(0,0,0,.08);
+  --crit:#DC2626;--crit-mid:#EF4444;--crit-bg:#FEF2F2;--crit-br:#FECACA;
+  --urg:#D97706;--urg-mid:#F59E0B;--urg-bg:#FFFBEB;--urg-br:#FDE68A;
+  --stab:#059669;--stab-mid:#10B981;--stab-bg:#ECFDF5;--stab-br:#A7F3D0;
+  --blue:#2563EB;--blue-bg:#EFF6FF;--blue-br:#BFDBFE;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;--purple-br:#DDD6FE;
+  --r:12px;--r-sm:8px;--r-lg:18px;
+}
+html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;height:62px;background:var(--surface);border-bottom:1.5px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;padding:0 24px 0 0;gap:0;z-index:50}
+.nav-left-area{width:300px;flex-shrink:0;display:flex;align-items:center;padding:0 24px;gap:12px;border-right:1.5px solid var(--border);height:100%}
+.nav-logo{font-size:13px;font-weight:700;letter-spacing:2.5px;color:var(--text);flex-shrink:0}
+.nav-sep{font-size:11px;color:var(--border2);letter-spacing:1px;flex-shrink:0}
+.nav-role{font-size:12px;font-weight:500;color:var(--text2)}
+.nav-right-area{flex:1;display:flex;align-items:center;padding:0 24px;gap:14px}
+.nav-spacer{flex:1}
+.nav-user{font-size:13px;font-weight:600}
+.btn-ghost{height:32px;padding:0 12px;background:var(--surface);color:var(--text2);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .14s}
+.btn-ghost:hover{background:var(--s3)}
+/* notif dot — unified */
+.notif-wrap{display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative}
+.notif-dot{min-width:8px;height:8px;border-radius:99px;background:#EF4444;animation:notifPulse 2.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;transition:min-width .18s,height .18s,padding .18s;padding:0}
+.notif-dot.has-count{min-width:16px;height:16px;padding:0 4px}
+@keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
+.specialty-pill{font-size:11px;font-weight:600;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br);border-radius:999px;padding:2px 8px}
+
+/* LAYOUT */
+.layout{position:fixed;top:62px;left:0;right:0;bottom:0;display:flex}
+
+/* LEFT PANEL */
+.left-panel{width:300px;flex-shrink:0;background:var(--surface);border-right:1.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.left-header{padding:22px 22px 16px;border-bottom:1.5px solid var(--border);flex-shrink:0}
+.left-header-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.left-header-sub{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px}
+
+.left-scroll{flex:1;overflow-y:auto;padding:10px}
+.left-scroll::-webkit-scrollbar{width:4px}
+.left-scroll::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.req-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);box-shadow:var(--shadow-sm);padding:13px 14px;cursor:pointer;transition:box-shadow .14s,transform .14s;position:relative;overflow:hidden;margin-bottom:6px}
+.req-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px}
+.req-card.border-crit::before{background:var(--crit)}
+.req-card.border-urg::before{background:var(--urg)}
+.req-card.border-stab::before{background:var(--stab)}
+.req-card:hover{box-shadow:var(--shadow);transform:translateY(-1px)}
+.req-card.active{border-color:var(--purple);box-shadow:0 0 0 2px rgba(124,58,237,.15),var(--shadow)}
+.req-card-title{font-size:13px;font-weight:700;margin-bottom:5px}
+.req-card-meta{font-size:11.5px;color:var(--text3)}
+.badge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;border:1.5px solid}
+.badge.crit{background:var(--crit-bg);color:var(--crit);border-color:var(--crit-br)}
+.badge.urg{background:var(--urg-bg);color:var(--urg);border-color:var(--urg-br)}
+.badge.stab{background:var(--stab-bg);color:var(--stab);border-color:var(--stab-br)}
+.badge.purple{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-br)}
+.badge.green{background:var(--stab-bg);color:var(--stab);border-color:var(--stab-br)}
+.badge.grey{background:var(--s3);color:var(--text2);border-color:var(--border)}
+
+.completed-section{background:var(--s2);border-top:1.5px solid var(--border);padding:12px 10px;flex-shrink:0}
+.completed-section-title{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:8px;padding:0 4px}
+.comp-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.comp-card-info{flex:1}
+.comp-card-name{font-size:13px;font-weight:600}
+.comp-card-meta{font-size:11.5px;color:var(--text3)}
+
+/* RIGHT PANEL */
+.right-panel{flex:1;overflow-y:auto;padding:36px}
+.right-panel::-webkit-scrollbar{width:6px}
+.right-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.rp-heading{font-size:20px;font-weight:700;margin-bottom:8px}
+.rp-context{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:28px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 18px}
+.rp-context strong{color:var(--text)}
+.doctor-note{font-style:italic;color:var(--text3);margin-top:6px;font-size:12.5px}
+
+/* PATIENT INFO GRID (specialist) */
+.pt-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.pt-cell{padding:12px 16px;border-bottom:1px solid var(--border);border-right:1px solid var(--border)}
+.pt-cell:nth-child(even){border-right:none}
+.pt-cell:nth-last-child(-n+2){border-bottom:none}
+.pt-cell.full{grid-column:1/-1;border-right:none}
+.pt-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:3px}
+.pt-val{font-size:14px;font-weight:500;color:var(--text)}
+.pt-val.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+
+/* SECTION HEADER */
+.spec-sec{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.spec-sec::after{content:'';flex:1;height:1px;background:var(--border)}
+.notes-ta{width:100%;min-height:80px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text);line-height:1.6;resize:vertical;outline:none;transition:border .2s,box-shadow .2s;margin-bottom:18px}
+.notes-ta:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:10px}
+.btn-validate{flex:1;height:42px;background:var(--stab);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:background .14s}
+.btn-validate:hover{background:#047857}
+.btn-flag{height:42px;padding:0 20px;background:var(--urg-bg);color:var(--urg);border:1.5px solid var(--urg-br);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:background .14s}
+.btn-flag:hover{background:var(--urg-br)}
+
+/* EMPTY STATE */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;text-align:center;color:var(--text3)}
+.empty-state svg{opacity:.3;margin-bottom:16px}
+.empty-state h3{font-size:16px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.empty-state p{font-size:13px}
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-left-area">
+    <div style="position:relative;display:flex;align-items:center">
+      <div class="notif-wrap" onclick="toggleNotifPanel(event)"><div class="notif-dot" id="notif-dot"></div></div>
+      <div id="notif-panel" style="display:none;position:absolute;top:34px;left:-4px;width:290px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-md);z-index:600;overflow:hidden">
+        <div style="padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Notifications</span>
+          <button onclick="markAllRead(event)" style="font-size:10px;font-weight:600;color:var(--text3);background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Mark all read</button>
+        </div>
+        <div id="notif-panel-list" style="max-height:280px;overflow-y:auto"></div>
+      </div>
+    </div>
+    <span class="nav-logo">SAHM</span>
+    <span class="nav-sep">//</span>
+    <span class="nav-role">Specialist</span>
+    <span class="specialty-pill" id="nav-specialty">Radiology</span>
+  </div>
+  <div class="nav-right-area">
+    <div class="nav-spacer"></div>
+    <span class="nav-user">Dr. Mansouri</span>
+    <button class="btn-ghost">Sign out</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-header">
+      <div class="left-header-title">Pending requests</div>
+      <div class="left-header-sub">
+        <span id="req-count">3 requests</span>
+      </div>
+    </div>
+    <div class="left-scroll" id="req-list"></div>
+    <div class="completed-section">
+      <div class="completed-section-title">Completed today</div>
+      <div id="comp-list"></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel" id="right-panel">
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <h3>Select a request</h3>
+      <p>Choose a pending exam request from the list</p>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const REQUESTS=[
+  {
+    id:'r1',patientName:'Amira Benali',examType:'Chest X-ray',urgency:'critical',status:'pending',
+    age:34,bloodType:'O+',allergies:'Penicillin',room:'ER-A',
+    doctorNote:'Suspected pneumothorax, significant respiratory distress. Sat 91%.',
+    requestedAt:'10:38',requestedBy:'Dr. Rédha',specialty:'radiology'
+  },
+  {
+    id:'r2',patientName:'Youcef Rahmani',examType:'ECG',urgency:'urgent',status:'pending',
+    age:67,bloodType:'AB+',allergies:'None',room:'ER-A',
+    doctorNote:'Patient reports palpitations and dizziness since this morning. Hx of hypertension.',
+    requestedAt:'10:05',requestedBy:'Dr. Rédha',specialty:'cardiology',
+    fileName:'ECG_Rahmani_2026-05-01.pdf',fileSize:'2.4 MB',
+  },
+  {
+    id:'r3',patientName:'Sara Bouhired',examType:'Brain MRI',urgency:'critical',status:'pending',
+    age:45,bloodType:'O-',allergies:'Aspirin, NSAIDs',room:'ER-B',
+    doctorNote:'Post-fall head trauma, GCS 13. Rule out intracranial haemorrhage. Patient on Warfarin.',
+    requestedAt:'11:20',requestedBy:'Dr. Meziani',specialty:'neurology'
+  },
+];
+
+const COMPLETED=[
+  {id:'c1',patientName:'Omar Tlemcani',examType:'Chest X-ray',urgency:'stable',validatedAt:'09:15'}
+];
+
+let selectedId=null;
+
+function triageClass(u){return u==='critical'?'crit':u==='urgent'?'urg':'stab'}
+function triageLabel(u){return u.charAt(0).toUpperCase()+u.slice(1)}
+
+function renderLeftPanel(){
+  const list=document.getElementById('req-list');
+  list.innerHTML='';
+  REQUESTS.forEach(r=>{
+    const tc=triageClass(r.urgency);
+    const card=document.createElement('div');
+    card.className=`req-card border-${tc}${r.id===selectedId?' active':''}`;
+    card.innerHTML=`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+        <span class="req-card-title" style="flex:1">${r.patientName}</span>
+        <span class="badge ${tc}">${triageLabel(r.urgency)}</span>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px">${r.examType}</div>
+      <div class="req-card-meta">${r.requestedBy} &middot; ${r.requestedAt}</div>`;
+    card.onclick=()=>{selectedId=r.id;renderLeftPanel();renderRight(r)};
+    list.appendChild(card);
+  });
+  const comp=document.getElementById('comp-list');
+  comp.innerHTML=COMPLETED.map(c=>`
+    <div class="comp-card">
+      <div class="comp-card-info">
+        <div class="comp-card-name">${c.patientName}</div>
+        <div class="comp-card-meta">${c.examType} &middot; ${c.validatedAt}</div>
+      </div>
+      <span class="badge green">Validated</span>
+    </div>`).join('');
+}
+
+function renderRight(r){
+  const rp=document.getElementById('right-panel');
+  rp.innerHTML=`
+    <div class="rp-heading">${r.patientName} &mdash; ${r.examType}</div>
+
+    <div class="spec-sec">Patient information</div>
+    <div class="pt-grid">
+      <div class="pt-cell"><div class="pt-label">Patient</div><div class="pt-val">${r.patientName}</div></div>
+      <div class="pt-cell"><div class="pt-label">Age</div><div class="pt-val">${r.age} years</div></div>
+      <div class="pt-cell"><div class="pt-label">Blood type</div><div class="pt-val mono">${r.bloodType}</div></div>
+      <div class="pt-cell"><div class="pt-label">Room</div><div class="pt-val mono">${r.room}</div></div>
+      <div class="pt-cell"><div class="pt-label">Allergies</div><div class="pt-val">${r.allergies}</div></div>
+      <div class="pt-cell"><div class="pt-label">Requested by</div><div class="pt-val">${r.requestedBy}</div></div>
+      <div class="pt-cell full"><div class="pt-label">Doctor's note</div><div class="pt-val" style="font-style:italic;color:var(--text2)">"${r.doctorNote}"</div></div>
+    </div>
+
+    <div class="spec-sec">Specialist report</div>
+    <textarea class="notes-ta" id="spec-report" placeholder="Write your specialist report and assessment here…" style="min-height:160px"></textarea>
+
+    <div class="action-row">
+      <button class="btn-validate" onclick="validate('${r.id}')">Validate &amp; send to doctor</button>
+      <button class="btn-flag" onclick="flagInconclusive('${r.id}')">Flag inconclusive</button>
+    </div>
+  `;
+}
+
+function validate(reqId){
+  const r=REQUESTS.find(x=>x.id===reqId);if(!r)return;
+  const report=document.getElementById('spec-report');
+  r.report=report?report.value:'';
+  r.status='validated';
+  COMPLETED.unshift({id:'c'+Date.now(),patientName:r.patientName,examType:r.examType,urgency:r.urgency,validatedAt:new Date().toTimeString().slice(0,5)});
+  const idx=REQUESTS.findIndex(x=>x.id===reqId);
+  if(idx>-1)REQUESTS.splice(idx,1);
+  selectedId=null;
+  renderLeft();
+  document.getElementById('right-panel').innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;text-align:center;gap:12px">
+      <div style="width:52px;height:52px;background:var(--stab-bg);border-radius:50%;display:flex;align-items:center;justify-content:center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--stab)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:16px;font-weight:700;color:var(--text)">Result validated</div>
+      <div style="font-size:13px;color:var(--text3)">The doctor will see this instantly</div>
+    </div>`;
+}
+
+function flagInconclusive(reqId){
+  const r=REQUESTS.find(x=>x.id===reqId);if(!r)return;
+  r.status='inconclusive';
+  alert('Result flagged as inconclusive. The requesting doctor will be notified.');
+}
+
+function renderLeft(){
+  document.getElementById('req-count').textContent=REQUESTS.length+' request'+(REQUESTS.length!==1?'s':'');
+  renderLeftPanel();
+}
+
+renderLeftPanel();
+/* notif dot */
+let NOTIF_MSGS=[{id:'n1',read:false,from:'Admin',msg:'Reminder: all specialist results must be validated within 2 hours.',time:'08:30'}];
+function getAlerts(){ try{ return JSON.parse(localStorage.getItem('sahm_alerts')||'[]'); }catch(e){return [];} }
+function getBloodPending(){ try{ return JSON.parse(localStorage.getItem('sahm_blood_requests')||'[]').filter(r=>r.status==='pending'); }catch(e){return [];} }
+
+function renderNotif(){
+  const unreadAlerts=getAlerts().filter(a=>!a.read&&(a.audience==='all'||a.audience==='Specialists')).length;
+  const blood=getBloodPending().length;
+  const unreadMsgs=NOTIF_MSGS.filter(m=>!m.read).length;
+  const total=unreadAlerts+blood+unreadMsgs;
+  const dot=document.getElementById('notif-dot');
+  if(total){dot.classList.add('has-count');dot.textContent=total;}else{dot.classList.remove('has-count');dot.textContent='';}
+}
+
+function toggleNotifPanel(e){
+  e.stopPropagation();
+  const panel=document.getElementById('notif-panel');
+  const open=panel.style.display!=='none';
+  panel.style.display=open?'none':'block';
+  if(!open) renderNotifPanel();
+}
+document.addEventListener('click',()=>{const p=document.getElementById('notif-panel');if(p)p.style.display='none';});
+
+function renderNotifPanel(){
+  const list=document.getElementById('notif-panel-list');if(!list)return;
+  const alerts=getAlerts().filter(a=>a.audience==='all'||a.audience==='Specialists');
+  const blood=getBloodPending();
+  let html='';
+  blood.forEach(r=>{html+=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);background:var(--crit-bg)"><div style="font-size:11.5px;font-weight:700;color:var(--crit)">🩸 Blood — ${r.urgency.toUpperCase()}</div><div style="font-size:12px;color:var(--text);margin-top:2px">${r.patientName} · ${r.patientBloodType}</div><div style="font-size:10.5px;color:var(--text3)">${r.requestedAt}</div></div>`;});
+  NOTIF_MSGS.forEach(m=>{html+=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);${m.read?'opacity:.55':''}"><div style="font-size:11px;color:var(--text3)">📡 ${m.from} · ${m.time||''}</div><div style="font-size:12px;color:var(--text);margin-top:2px;line-height:1.4">${m.msg}</div></div>`;});
+  alerts.slice().reverse().forEach(a=>{html+=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);${a.read?'opacity:.55':''}"><div style="font-size:11px;color:var(--text3)">${a.type==='alert'?'⚠':'ℹ'} ${a.time} · Admin</div><div style="font-size:12px;color:var(--text);margin-top:2px;line-height:1.4">${a.text}</div></div>`;});
+  if(!html)html='<div style="padding:14px;font-size:12px;color:var(--text3);text-align:center">No notifications</div>';
+  list.innerHTML=html;
+}
+
+function markAllRead(e){
+  if(e)e.stopPropagation();
+  NOTIF_MSGS.forEach(m=>m.read=true);
+  try{const alerts=getAlerts().map(a=>(a.audience==='all'||a.audience==='Specialists')?{...a,read:true}:a);localStorage.setItem('sahm_alerts',JSON.stringify(alerts));}catch(ex){}
+  renderNotif();renderNotifPanel();
+}
+renderNotif();
+setInterval(renderNotif,2000);
+renderNotif();
+</script>
+<script src="/sahm-app/backend/specialist.js"></script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SAHM — Ambulance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  import { requireAuth } from "/sahm-app/backend/auth.js";
+    requireAuth(); // redirects to auth.html if not logged in
+    // then read role from localStorage:
+    const role = localStorage.getItem("role");
+    const hospitalId = localStorage.getItem("hospitalId");</script>
+  </script>
+<style>
+:root{
+  --bg:#EAECF0;--surface:#fff;--s2:#F9FAFB;--s3:#F3F4F6;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--text2:#6B7280;--text3:#9CA3AF;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 8px 24px rgba(0,0,0,.1);
+  --red:#DC2626;--red-bg:#FEF2F2;--red-br:#FECACA;
+  --blue:#2563EB;--blue-bg:#EFF6FF;--blue-br:#BFDBFE;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;--purple-br:#DDD6FE;
+  --stab:#059669;--stab-bg:#ECFDF5;--stab-br:#A7F3D0;
+  --urg:#D97706;--urg-bg:#FFFBEB;--urg-br:#FDE68A;
+  --r:12px;--r-sm:8px;--nav-h:54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text)}
+body{min-height:100dvh}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;padding:0 14px;z-index:100;gap:7px}
+.notif-wrap{display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.notif-dot{min-width:8px;height:8px;border-radius:99px;background:#EF4444;animation:notifPulse 2.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;transition:min-width .18s,height .18s,padding .18s;padding:0}
+.notif-dot.has-count{min-width:16px;height:16px;padding:0 4px}
+@keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
+.nav-logo{font-size:13px;font-weight:700;letter-spacing:2.5px;color:var(--text);flex-shrink:0}
+.nav-sep{font-size:11px;color:var(--border2);letter-spacing:1px;flex-shrink:0}
+.nav-label{font-size:11.5px;font-weight:600;color:var(--text2);flex-shrink:0}
+.org-badge{font-size:10.5px;font-weight:700;border-radius:999px;padding:3px 9px;cursor:pointer;transition:all .14s;border:none;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.org-badge.pc{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-br)}
+.org-badge.samu{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br)}
+.nav-spacer{flex:1}
+.nav-signout{font-size:12px;font-weight:500;color:var(--text3);background:none;border:none;cursor:pointer;padding:4px;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.nav-signout:hover{color:var(--text)}
+
+/* MAIN */
+.main{margin-top:var(--nav-h);padding:14px;display:flex;flex-direction:column;gap:12px;padding-bottom:36px;max-width:600px;margin-left:auto;margin-right:auto}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--s2);border-bottom:1px solid var(--border)}
+.card-title{font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+.card-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+.gcs-ref{font-size:11px;color:var(--blue);text-decoration:none;font-weight:600}
+.gcs-ref:hover{text-decoration:underline}
+
+/* GLASGOW */
+.gcs-section{display:flex;flex-direction:column;gap:4px}
+.gcs-section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
+.gcs-opts{display:flex;flex-wrap:wrap;gap:5px}
+.gcs-btn{height:32px;padding:0 9px;border:1.5px solid var(--border);border-radius:6px;background:var(--s2);font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .12s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.gcs-btn:active{transform:scale(.96)}
+.gcs-btn.on{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+
+/* GCS result */
+.gcs-result{display:flex;align-items:stretch;gap:10px;padding:12px;background:var(--s2);border-radius:var(--r-sm);border:1px solid var(--border)}
+.gcs-score-block{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding:8px;border-radius:var(--r-sm);background:var(--surface);border:1.5px solid var(--border)}
+.gcs-score-num{font-size:32px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
+.gcs-score-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;color:var(--text3)}
+.gcs-score-num.normal{color:var(--stab)}
+.gcs-score-num.moderate{color:var(--urg)}
+.gcs-score-num.severe{color:var(--red)}
+.gcs-routing-block{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 12px;border-radius:var(--r-sm)}
+.gcs-routing-block.pending{background:var(--s3);border:1.5px dashed var(--border2)}
+.gcs-routing-block.office{background:var(--stab-bg);border:1.5px solid var(--stab-br)}
+.gcs-routing-block.er{background:var(--red-bg);border:1.5px solid var(--red-br)}
+.gcs-routing-title{font-size:13px;font-weight:800;margin-bottom:2px}
+.gcs-routing-block.pending .gcs-routing-title{color:var(--text3)}
+.gcs-routing-block.office .gcs-routing-title{color:var(--stab)}
+.gcs-routing-block.er .gcs-routing-title{color:var(--red)}
+.gcs-routing-sub{font-size:11px;color:var(--text3)}
+.gcs-routing-block.office .gcs-routing-sub{color:var(--stab)}
+.gcs-routing-block.er .gcs-routing-sub{color:var(--red)}
+
+/* FIELDS */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-grid.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.field-input{height:40px;padding:0 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;width:100%;transition:border .14s}
+.field-input:focus{border-color:var(--blue);background:#fff}
+.field-input::placeholder{color:var(--text3)}
+.field-select{height:40px;padding:0 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;width:100%;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.field-textarea{padding:10px 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;width:100%;resize:none;min-height:80px;line-height:1.5}
+.field-textarea:focus{border-color:var(--blue);background:#fff}
+
+/* HOSPITAL */
+.hosp-card{border:1.5px solid var(--border);border-radius:var(--r-sm);padding:12px 13px;cursor:pointer;transition:all .14s;-webkit-tap-highlight-color:transparent}
+.hosp-card:active{transform:scale(.98)}
+.hosp-card.selected{border-color:var(--blue);background:var(--blue-bg);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.hosp-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:1px}
+.hosp-dist{font-size:11px;color:var(--text3);margin-bottom:8px}
+.blood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
+.blood-cell{display:flex;flex-direction:column;align-items:center;gap:1px;padding:3px 2px;border-radius:4px;border:1px solid var(--border);background:var(--surface)}
+.blood-type{font-size:9px;font-weight:700;color:var(--text2);font-family:'JetBrains Mono',monospace}
+.blood-avail{font-size:10px;font-weight:700}
+.blood-avail.ok{color:var(--stab)}
+.blood-avail.low{color:var(--urg)}
+.blood-avail.none{color:var(--red)}
+
+/* selected preview */
+.hosp-preview{display:flex;align-items:center;gap:8px;padding:10px 13px;border:1.5px solid var(--blue);border-radius:var(--r-sm);background:var(--blue-bg);margin-top:10px}
+.hosp-prev-name{font-size:13px;font-weight:700;color:var(--blue);flex:1}
+.hosp-prev-dist{font-size:11px;color:var(--blue)}
+.no-hosp{font-size:12px;color:var(--text3);font-style:italic;padding:4px 0}
+
+/* DISPATCH BUTTON */
+.dispatch-btn{width:100%;height:52px;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .16s;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent}
+.dispatch-btn:active{transform:scale(.98)}
+.dispatch-btn.er{background:var(--red);color:#fff;box-shadow:0 2px 12px rgba(220,38,38,.25)}
+.dispatch-btn.office{background:var(--stab);color:#fff;box-shadow:0 2px 12px rgba(5,150,105,.25)}
+.dispatch-btn.idle{background:var(--text2);color:#fff}
+
+/* SENT LOG */
+.sent-section-title{font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.sent-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 13px;margin-bottom:8px}
+.sent-top{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.sent-gcs-chip{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:5px}
+.sent-gcs-chip.office{background:var(--stab-bg);color:var(--stab);border:1px solid var(--stab-br)}
+.sent-gcs-chip.er{background:var(--red-bg);color:var(--red);border:1px solid var(--red-br)}
+.sent-org{font-size:10.5px;font-weight:600;color:var(--text3);margin-left:auto}
+.sent-patient{font-size:13px;font-weight:600;color:var(--text)}
+.sent-meta{font-size:11.5px;color:var(--text3);margin-top:2px}
+.sent-status-row{display:flex;align-items:center;gap:6px;margin-top:6px}
+.sent-status{font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:5px}
+.sent-status.ack{background:var(--stab-bg);color:var(--stab);border:1px solid var(--stab-br)}
+.sent-status.pend{background:var(--urg-bg);color:var(--urg);border:1px solid var(--urg-br)}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="notif-wrap" id="notif-wrap">
+    <div class="notif-dot" id="notif-dot"></div>
+  </div>
+  <span class="nav-logo">SAHM</span>
+  <span class="nav-sep">//</span>
+  <span class="nav-label">Dispatch Ambulance · Boussouf</span>
+  <span class="org-badge" id="org-badge">—</span>
+  <div class="nav-spacer"></div>
+  <button class="nav-signout">Sign out</button>
+</nav>
+
+<div class="main">
+
+  <!-- ══ GLASGOW COMA SCALE ══ -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Glasgow Coma Scale</span>
+      <a href="https://www.sfmu.org/calculateurs/glasgow.htm" target="_blank" rel="noopener" class="gcs-ref">↗ Reference</a>
+    </div>
+    <div class="card-body">
+
+      <div class="gcs-section">
+        <div class="gcs-section-label">E — Eye Opening</div>
+        <div class="gcs-opts" id="gcs-e-opts">
+          <button class="gcs-btn" data-g="e" data-v="4" onclick="setGCS(this)">Spontaneous</button>
+          <button class="gcs-btn" data-g="e" data-v="3" onclick="setGCS(this)">To voice</button>
+          <button class="gcs-btn" data-g="e" data-v="2" onclick="setGCS(this)">To pain</button>
+        </div>
+      </div>
+
+      <div class="gcs-section">
+        <div class="gcs-section-label">V — Verbal Response</div>
+        <div class="gcs-opts" id="gcs-v-opts">
+          <button class="gcs-btn" data-g="v" data-v="5" onclick="setGCS(this)">Oriented</button>
+          <button class="gcs-btn" data-g="v" data-v="4" onclick="setGCS(this)">Confused</button>
+          <button class="gcs-btn" data-g="v" data-v="3" onclick="setGCS(this)">Incoherent</button>
+          <button class="gcs-btn" data-g="v" data-v="2" onclick="setGCS(this)">Incomprehensible</button>
+        </div>
+      </div>
+
+      <div class="gcs-section">
+        <div class="gcs-section-label">M — Motor Response</div>
+        <div class="gcs-opts" id="gcs-m-opts">
+          <button class="gcs-btn" data-g="m" data-v="6" onclick="setGCS(this)">Obeys orders</button>
+          <button class="gcs-btn" data-g="m" data-v="5" onclick="setGCS(this)">Localizes pain</button>
+          <button class="gcs-btn" data-g="m" data-v="4" onclick="setGCS(this)">Withdraws</button>
+          <button class="gcs-btn" data-g="m" data-v="3" onclick="setGCS(this)">Decorticated</button>
+          <button class="gcs-btn" data-g="m" data-v="2" onclick="setGCS(this)">Decerebrated</button>
+        </div>
+      </div>
+
+      <!-- Score + Routing -->
+      <div class="gcs-result">
+        <div class="gcs-score-block" id="gcs-score-block">
+          <div class="gcs-score-num" id="gcs-score-num">—</div>
+          <div class="gcs-score-label">E+V+M</div>
+        </div>
+        <div class="gcs-routing-block pending" id="gcs-routing-block">
+          <div class="gcs-routing-title" id="gcs-routing-title">Select all 3 components</div>
+          <div class="gcs-routing-sub" id="gcs-routing-sub">Eye · Verbal · Motor</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ PATIENT BRIEF ══ -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Patient Brief</span></div>
+    <div class="card-body">
+      <div class="field-grid">
+        <div class="field">
+          <label class="field-label">Approx. age</label>
+          <input class="field-input" id="d-age" placeholder="e.g. 55 y" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label class="field-label">Sex</label>
+          <select class="field-select" id="d-sex">
+            <option value="">—</option>
+            <option>Male</option><option>Female</option><option>Unknown</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label">Est. blood type</label>
+          <select class="field-select" id="d-blood">
+            <option value="">Unknown</option>
+            <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+            <option>O+</option><option>O−</option><option>AB+</option><option>AB−</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:span 2">
+          <label class="field-label">ETA — GPS</label>
+          <div id="gps-eta-display" style="display:flex;align-items:center;gap:8px;height:40px;padding:0 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);cursor:pointer" onclick="fetchGPSEta()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--blue)"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            <span id="gps-eta-text" style="font-size:13px;font-weight:600;color:var(--text2)">Tap to get GPS ETA</span>
+            <span id="gps-eta-spinner" style="display:none;font-size:11px;color:var(--text3)">Locating…</span>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Chief complaint / condition</label>
+        <textarea class="field-textarea" id="d-complaint" placeholder="Describe patient's condition…"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Known allergies / medications</label>
+        <input class="field-input" id="d-meds" placeholder="None / Unknown">
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TARGET HOSPITAL ══ -->
+  <div class="card">
+    <div class="card-head"><span class="card-title">Target Hospital</span></div>
+    <div class="card-body" id="hosp-list"></div>
+    <div style="padding:0 14px 14px" id="hosp-selected-wrap">
+      <div class="no-hosp">Tap a hospital above to select it</div>
+    </div>
+  </div>
+
+  <!-- ══ DISPATCH BUTTON ══ -->
+  <button class="dispatch-btn idle" id="dispatch-btn" onclick="sendDispatch()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    Send Dispatch
+  </button>
+  <div id="gcs15-notice" style="display:none;align-items:center;gap:10px;padding:14px;background:var(--stab-bg);border:1.5px solid var(--stab-br);border-radius:var(--r-sm)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--stab)"><polyline points="20 6 9 17 4 12"/></svg>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--stab)">GCS 15 — No notification needed</div>
+      <div style="font-size:11.5px;color:var(--stab);margin-top:1px">Patient is neurologically normal. Direct to doctor's office.</div>
+    </div>
+  </div>
+
+  <!-- ══ SENT LOG ══ -->
+  <div>
+    <div class="sent-section-title">Dispatched today</div>
+    <div id="sent-list">
+      <div style="font-size:12px;color:var(--text3);font-style:italic">No dispatches yet.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── Org toggle ── */
+/* ── Org type derived from staff ID (PC-*** = Civil Protection, SM-*** = SAMU) ── */
+const STAFF_ID = 'PC-0042'; // set by auth/login
+let orgType = STAFF_ID.startsWith('SM') ? 'samu' : 'pc';
+function initOrgBadge(){
+  const b = document.getElementById('org-badge');
+  if(!b) return;
+  if(orgType === 'samu'){ b.className='org-badge samu'; b.textContent='SAMU'; }
+  else { b.className='org-badge pc'; b.textContent='Civil Protection'; }
+}
+initOrgBadge();
+
+/* ── Glasgow ── */
+let gcsE = 0, gcsV = 0, gcsM = 0;
+
+function setGCS(btn){
+  const g = btn.dataset.g;
+  const wasOn = btn.classList.contains('on');
+  document.querySelectorAll(`.gcs-btn[data-g="${g}"]`).forEach(b => b.classList.remove('on'));
+  if(!wasOn){
+    btn.classList.add('on');
+    if(g==='e') gcsE = parseInt(btn.dataset.v);
+    else if(g==='v') gcsV = parseInt(btn.dataset.v);
+    else gcsM = parseInt(btn.dataset.v);
+  } else {
+    if(g==='e') gcsE = 0;
+    else if(g==='v') gcsV = 0;
+    else gcsM = 0;
+  }
+  updateGCS();
+  updateDispatchBtn();
+}
+
+function updateGCS(){
+  const numEl = document.getElementById('gcs-score-num');
+  const blockEl = document.getElementById('gcs-score-block');
+  const routingBlock = document.getElementById('gcs-routing-block');
+  const routingTitle = document.getElementById('gcs-routing-title');
+  const routingSub = document.getElementById('gcs-routing-sub');
+
+  if(!gcsE || !gcsV || !gcsM){
+    numEl.textContent = '—';
+    numEl.className = 'gcs-score-num';
+    routingBlock.className = 'gcs-routing-block pending';
+    routingTitle.textContent = 'Select all 3 components';
+    routingSub.textContent = 'Eye · Verbal · Motor';
+    return;
+  }
+
+  const score = gcsE + gcsV + gcsM;
+  numEl.textContent = score;
+
+  if(score === 15){
+    numEl.className = 'gcs-score-num normal';
+    routingBlock.className = 'gcs-routing-block office';
+    routingTitle.textContent = '✓ Doctor\'s Office';
+    routingSub.textContent = 'GCS 15 — Normal neurological status';
+  } else if(score >= 9){
+    numEl.className = 'gcs-score-num moderate';
+    routingBlock.className = 'gcs-routing-block er';
+    routingTitle.textContent = '→ ER Déchocage';
+    routingSub.textContent = `GCS ${score}/15 — Moderate impairment`;
+  } else {
+    numEl.className = 'gcs-score-num severe';
+    routingBlock.className = 'gcs-routing-block er';
+    routingTitle.textContent = '⚠ ER Déchocage';
+    routingSub.textContent = `GCS ${score}/15 — Severe, immediate care required`;
+  }
+}
+
+function getScore(){
+  if(!gcsE || !gcsV || !gcsM) return null;
+  return gcsE + gcsV + gcsM;
+}
+
+function updateDispatchBtn(){
+  const btn = document.getElementById('dispatch-btn');
+  const notice = document.getElementById('gcs15-notice');
+  const score = getScore();
+  const icon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
+  if(score === 15){
+    btn.style.display = 'none';
+    notice.style.display = 'flex';
+  } else {
+    notice.style.display = 'none';
+    btn.style.display = 'flex';
+    if(score === null){
+      btn.className = 'dispatch-btn idle';
+      btn.innerHTML = icon + ' Send Dispatch';
+    } else {
+      btn.className = 'dispatch-btn er';
+      btn.innerHTML = icon + ' Send to ER — Déchocage';
+    }
+  }
+}
+
+/* ── Hospitals ── */
+const HOSPITALS = [
+  {id:'h1',name:'CHU Ibn Badis',dist:'—',lat:36.3650,lng:6.6147,blood:{'A+':12,'A−':2,'B+':8,'B−':1,'O+':15,'O−':3,'AB+':4,'AB−':0}},
+];
+let selectedHospId = null;
+let NOTIF_MSGS = [];
+let SENT = [];
+
+function availClass(n){return n>5?'ok':n>0?'low':'none';}
+function availLabel(n){return n>5?n:n>0?n:'—';}
+
+function renderHospitals(){
+  const list = document.getElementById('hosp-list');
+  list.innerHTML = '';
+  HOSPITALS.forEach(h => {
+    const card = document.createElement('div');
+    card.className = 'hosp-card' + (h.id === selectedHospId ? ' selected' : '');
+    const bloodHtml = Object.entries(h.blood).map(([t,n]) =>
+      `<div class="blood-cell"><div class="blood-type">${t}</div><div class="blood-avail ${availClass(n)}">${availLabel(n)}</div></div>`
+    ).join('');
+    card.innerHTML = `
+      <div class="hosp-name">${h.name}</div>
+      <div class="hosp-dist">${h.dist} away</div>
+      <div class="blood-grid">${bloodHtml}</div>`;
+    card.onclick = () => selectHospital(h.id);
+    list.appendChild(card);
+  });
+}
+
+function selectHospital(id){
+  selectedHospId = id;
+  renderHospitals();
+  const h = HOSPITALS.find(x => x.id === id);
+  if(!h) return;
+  document.getElementById('hosp-selected-wrap').innerHTML = `
+    <div class="hosp-preview">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--blue)"><polyline points="20 6 9 17 4 12"/></svg>
+      <div class="hosp-prev-name">${h.name}</div>
+      <div class="hosp-prev-dist">${h.dist}</div>
+    </div>`;
+}
+
+/* ── Dispatch ── */
+let gpsEtaMin = null;
+
+function fetchGPSEta(){
+  if(!selectedHospId){ alert('Select a target hospital first.'); return; }
+  const textEl = document.getElementById('gps-eta-text');
+  const spinEl = document.getElementById('gps-eta-spinner');
+  const display = document.getElementById('gps-eta-display');
+  textEl.style.display = 'none';
+  spinEl.style.display = 'inline';
+  if(!navigator.geolocation){ textEl.textContent = 'GPS unavailable'; textEl.style.display='inline'; spinEl.style.display='none'; return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const h = HOSPITALS.find(x => x.id === selectedHospId);
+    if(!h || !h.lat){ gpsEtaMin = 8; }
+    else {
+      const dlat = pos.coords.latitude - h.lat;
+      const dlng = pos.coords.longitude - h.lng;
+      const distKm = Math.sqrt(dlat*dlat + dlng*dlng) * 111;
+      // assume 40 km/h average urban speed
+      gpsEtaMin = Math.max(2, Math.round(distKm / 40 * 60));
+    }
+    spinEl.style.display = 'none';
+    display.style.borderColor = 'var(--stab)';
+    display.style.background = 'var(--stab-bg)';
+    textEl.textContent = `ETA ~${gpsEtaMin} min`;
+    textEl.style.color = 'var(--stab)';
+    textEl.style.display = 'inline';
+  }, () => {
+    spinEl.style.display = 'none';
+    gpsEtaMin = null;
+    textEl.textContent = 'Location denied — ETA unknown';
+    textEl.style.display = 'inline';
+  });
+}
+
+function sendDispatch(){
+  const score = getScore();
+  if(score === null){ alert('Complete the Glasgow Coma Scale first.'); return; }
+  if(!selectedHospId){ alert('Select a target hospital first.'); return; }
+  const h = HOSPITALS.find(x => x.id === selectedHospId);
+  const age = document.getElementById('d-age').value || '?';
+  const sex = document.getElementById('d-sex').value || '?';
+  const complaint = document.getElementById('d-complaint').value || 'No details';
+  const org = orgType === 'pc' ? 'Civil Protection' : 'SAMU';
+  const entry = {
+    id: 'd' + Date.now(), gcs: score,
+    patient: `${sex}, ${age}`, hospital: h.name,
+    eta: gpsEtaMin ? gpsEtaMin + ' min' : '—', complaint: complaint.slice(0,80) + (complaint.length > 80 ? '…' : ''),
+    org, time: nowStr(), status: 'pending',
+  };
+  SENT.unshift(entry);
+  renderSent();
+  setTimeout(() => { entry.status = 'acknowledged'; renderSent(); }, 12000);
+  document.getElementById('d-complaint').value = '';
+  document.getElementById('d-age').value = '';
+  gpsEtaMin = null;
+  const etaDisplay = document.getElementById('gps-eta-display');
+  etaDisplay.style.borderColor = '';
+  etaDisplay.style.background = '';
+  document.getElementById('gps-eta-text').textContent = 'Tap to get GPS ETA';
+  document.getElementById('gps-eta-text').style.color = '';
+}
+
+function renderSent(){
+  const list = document.getElementById('sent-list');
+  if(!SENT.length){ list.innerHTML = '<div style="font-size:12px;color:var(--text3);font-style:italic">No dispatches yet.</div>'; return; }
+  list.innerHTML = '';
+  SENT.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'sent-card';
+    const chipClass = s.gcs === 15 ? 'office' : 'er';
+    const chipText = s.gcs === 15 ? `GCS ${s.gcs} — Office` : `GCS ${s.gcs} — ER`;
+    card.innerHTML = `
+      <div class="sent-top">
+        <span class="sent-gcs-chip ${chipClass}">${chipText}</span>
+        <span class="sent-org">${s.org}</span>
+      </div>
+      <div class="sent-patient">${s.patient} · ${s.complaint}</div>
+      <div class="sent-meta">${s.hospital} · ETA ${s.eta} · ${s.time}</div>
+      <div class="sent-status-row">
+        <span class="sent-status ${s.status === 'acknowledged' ? 'ack' : 'pend'}">${s.status === 'acknowledged' ? 'Acknowledged' : 'Pending'}</span>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+/* ── Notif ── */
+function renderNotif(){
+  const dot = document.getElementById('notif-dot');
+  const unread = NOTIF_MSGS.filter(m => !m.read);
+  if(unread.length){ dot.classList.add('has-count'); dot.textContent = unread.length; }
+  else { dot.classList.remove('has-count'); dot.textContent = ''; }
+}
+
+function nowStr(){ return new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'}); }
+
+/* ── Init ── */
+renderHospitals();
+renderNotif();
+renderSent();
+</script>
+<script src="/sahm-app/backend/ambulance.js"></script>
+</body>
+</html>
