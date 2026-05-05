@@ -1,7 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { doc, setDoc, getDoc, updateDoc, collection, onSnapshot} from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc,
+  deleteDoc, getDocs, collection, onSnapshot, query,
+  where, orderBy, limit, writeBatch, serverTimestamp} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDafHuE8M9Cf_i53Ak-rE5fQD5Fh56hDIg",
@@ -15,6 +17,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export { doc, setDoc, getDoc, updateDoc, deleteDoc, getDocs,
+  collection, onSnapshot, query, where, orderBy,
+  limit, writeBatch, serverTimestamp };
 
 // Create / Set user profile
 
@@ -46,3 +51,8 @@ export const loadUsers = async () => {
   const snap = await getDocs(collection(db,"users"));
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 };
+
+
+
+
+

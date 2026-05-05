@@ -6,13 +6,7 @@
 <title>SAHM — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>
-import { requireAuth } from "/sahm-app/backend/auth.js";
-  requireAuth(); // redirects to auth.html if not logged in
-  // then read role from localStorage:
-  const role = localStorage.getItem("role");
-  const hospitalId = localStorage.getItem("hospitalId");
-</script>
+
 <style>
 :root{
   --bg:#EAECF0;--surface:#FFFFFF;--s2:#F9FAFB;--s3:#F3F4F6;
@@ -854,6 +848,6 @@ function statusLabel(s){
   return map[s]||s;
 }
 </script>
-<script src="/sahm-app/backend/admin.js"></script>
+<script src="./backend/admin.js"></script>
 </body>
 </html>
