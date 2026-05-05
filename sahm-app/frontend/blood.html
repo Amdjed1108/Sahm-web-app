@@ -215,10 +215,6 @@ body{min-height:100dvh}
   <div class="card">
     <div class="card-head">
       <span class="card-title">Blood Inventory</span>
-      <button onclick="openAddStock(null)" style="height:28px;padding:0 10px;background:var(--red);color:#fff;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:4px">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add stock
-      </button>
     </div>
     <div class="card-body">
       <div class="inv-grid" id="inv-grid"></div>
@@ -255,12 +251,6 @@ body{min-height:100dvh}
         <div class="field">
           <label class="field-label">Units to add</label>
           <input class="field-input" id="st-qty" type="number" min="1" max="50" placeholder="e.g. 4" inputmode="numeric">
-        </div>
-        <div class="field">
-          <label class="field-label">Expires (days)</label>
-          <input class="field-input" id="st-exp" type="number" min="1" max="42" placeholder="e.g. 35" inputmode="numeric">
-        </div>
-      </div>
       <div class="field">
         <label class="field-label">Donor source / notes</label>
         <input class="field-input" id="st-note" placeholder="e.g. Blood drive — CHU Ibn Badis">
@@ -316,14 +306,14 @@ const CAN_RECEIVE_FROM = {
 
 /* ── Inventory ── */
 let INVENTORY = {
-  'A+':  {qty:12, expDays:28},
-  'A−':  {qty:2,  expDays:5},
-  'B+':  {qty:8,  expDays:30},
-  'B−':  {qty:1,  expDays:3},
-  'O+':  {qty:15, expDays:35},
-  'O−':  {qty:3,  expDays:12},
-  'AB+': {qty:4,  expDays:22},
-  'AB−': {qty:0,  expDays:0},
+  'A+':  {qty:12},
+  'A−':  {qty:2},
+  'B+':  {qty:8},
+  'B−':  {qty:1},
+  'O+':  {qty:15},
+  'O−':  {qty:3},
+  'AB+': {qty:4},
+  'AB−': {qty:0},
 };
 
 /* ── Requests ── */
