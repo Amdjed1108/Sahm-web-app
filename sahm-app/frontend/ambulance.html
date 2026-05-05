@@ -143,7 +143,7 @@ body{min-height:100dvh}
   <span class="nav-logo">SAHM</span>
   <span class="nav-sep">//</span>
   <span class="nav-label">Dispatch Ambulance · Boussouf</span>
-  <button class="org-badge pc" id="org-badge" onclick="toggleOrg()">Civil Protection</button>
+  <span class="org-badge" id="org-badge">—</span>
   <div class="nav-spacer"></div>
   <button class="nav-signout">Sign out</button>
 </nav>
@@ -281,18 +281,16 @@ body{min-height:100dvh}
 
 <script>
 /* ── Org toggle ── */
-let orgType = 'pc';
-function toggleOrg(){
-  orgType = orgType === 'pc' ? 'samu' : 'pc';
+/* ── Org type derived from staff ID (PC-*** = Civil Protection, SM-*** = SAMU) ── */
+const STAFF_ID = 'PC-0042'; // set by auth/login
+let orgType = STAFF_ID.startsWith('SM') ? 'samu' : 'pc';
+function initOrgBadge(){
   const b = document.getElementById('org-badge');
-  if(orgType === 'pc'){
-    b.textContent = 'Civil Protection';
-    b.className = 'org-badge pc';
-  } else {
-    b.textContent = 'SAMU';
-    b.className = 'org-badge samu';
-  }
+  if(!b) return;
+  if(orgType === 'samu'){ b.className='org-badge samu'; b.textContent='SAMU'; }
+  else { b.className='org-badge pc'; b.textContent='Civil Protection'; }
 }
+initOrgBadge();
 
 /* ── Glasgow ── */
 let gcsE = 0, gcsV = 0, gcsM = 0;

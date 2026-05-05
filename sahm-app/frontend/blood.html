@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SAHM — Blood Service</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+    
+:root{
+  --bg:#EAECF0;--surface:#fff;--s2:#F9FAFB;--s3:#F3F4F6;
+  --border:#E5E7EB;--border2:#D1D5DB;
+  --text:#111827;--text2:#6B7280;--text3:#9CA3AF;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.08);
+  --shadow-md:0 8px 24px rgba(0,0,0,.1);
+  --shadow-xl:0 20px 60px rgba(0,0,0,.18);
+  --red:#DC2626;--red-bg:#FEF2F2;--red-br:#FECACA;
+  --blue:#2563EB;--blue-bg:#EFF6FF;--blue-br:#BFDBFE;
+  --purple:#7C3AED;--purple-bg:#F5F3FF;--purple-br:#DDD6FE;
+  --stab:#059669;--stab-bg:#ECFDF5;--stab-br:#A7F3D0;
+  --urg:#D97706;--urg-bg:#FFFBEB;--urg-br:#FDE68A;
+  --r:12px;--r-sm:8px;--r-lg:18px;--nav-h:54px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text)}
+body{min-height:100dvh}
+
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;padding:0 14px;z-index:100;gap:7px}
+.notif-wrap{display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative}
+.notif-dot{min-width:8px;height:8px;border-radius:99px;background:#EF4444;animation:notifPulse 2.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;transition:min-width .18s,height .18s,padding .18s;padding:0}
+.notif-dot.has-count{min-width:16px;height:16px;padding:0 4px}
+@keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
+.nav-logo{font-size:13px;font-weight:700;letter-spacing:2.5px;color:var(--text);flex-shrink:0}
+.nav-sep{font-size:11px;color:var(--border2);letter-spacing:1px;flex-shrink:0}
+.nav-label{font-size:11.5px;font-weight:600;color:var(--text2);flex-shrink:0}
+.blood-badge{font-size:10.5px;font-weight:700;background:var(--red-bg);color:var(--red);border:1px solid var(--red-br);border-radius:999px;padding:3px 9px;flex-shrink:0}
+.nav-spacer{flex:1}
+.nav-signout{font-size:12px;font-weight:500;color:var(--text3);background:none;border:none;cursor:pointer;padding:4px;font-family:'Plus Jakarta Sans',sans-serif;flex-shrink:0}
+.nav-signout:hover{color:var(--text)}
+
+/* ── MAIN ── */
+.main{margin-top:var(--nav-h);padding:14px;display:flex;flex-direction:column;gap:12px;padding-bottom:48px;max-width:640px;margin-left:auto;margin-right:auto}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--s2);border-bottom:1px solid var(--border)}
+.card-title{font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
+.card-body{padding:14px;display:flex;flex-direction:column;gap:10px}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 14px}
+.stat-num{font-size:26px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1;margin-bottom:2px}
+.stat-num.ok{color:var(--stab)}
+.stat-num.warn{color:var(--urg)}
+.stat-num.alert{color:var(--red)}
+.stat-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+
+/* ── BLOOD INVENTORY GRID ── */
+.inv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.inv-card{border-radius:var(--r-sm);padding:10px 8px;text-align:center;border:1.5px solid var(--border);background:var(--s2);transition:all .14s;cursor:pointer;-webkit-tap-highlight-color:transparent;position:relative}
+.inv-card:hover{border-color:var(--border2)}
+.inv-card.critical{border-color:var(--red-br);background:var(--red-bg)}
+.inv-card.low{border-color:var(--urg-br);background:var(--urg-bg)}
+.inv-card.ok{border-color:var(--stab-br);background:var(--stab-bg)}
+.inv-type{font-size:17px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-bottom:4px}
+.inv-card.critical .inv-type{color:var(--red)}
+.inv-card.low .inv-type{color:var(--urg)}
+.inv-card.ok .inv-type{color:var(--stab)}
+.inv-qty{font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;line-height:1}
+.inv-card.critical .inv-qty{color:var(--red)}
+.inv-card.low .inv-qty{color:var(--urg)}
+.inv-card.ok .inv-qty{color:var(--stab)}
+.inv-unit{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.inv-expiry{font-size:8.5px;font-weight:600;margin-top:4px;padding:1px 5px;border-radius:3px;background:var(--urg-bg);color:var(--urg);border:1px solid var(--urg-br)}
+.inv-add-btn{position:absolute;top:5px;right:5px;width:16px;height:16px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .14s;-webkit-tap-highlight-color:transparent}
+.inv-card:hover .inv-add-btn{opacity:1}
+
+/* ── REQUEST CARDS ── */
+.req-card{border:1.5px solid var(--border);border-radius:var(--r-sm);overflow:hidden;transition:box-shadow .14s}
+.req-card.immediate{border-color:var(--red-br)}
+.req-card.urgent{border-color:var(--urg-br)}
+.req-card.routine{border-color:var(--blue-br)}
+.req-card-head{display:flex;align-items:center;gap:8px;padding:10px 13px;background:var(--s2)}
+.req-card.immediate .req-card-head{background:var(--red-bg)}
+.req-card.urgent .req-card-head{background:var(--urg-bg)}
+.req-card.routine .req-card-head{background:var(--blue-bg)}
+.urgency-badge{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0}
+.urgency-badge.immediate{background:var(--red);color:#fff}
+.urgency-badge.urgent{background:var(--urg);color:#fff}
+.urgency-badge.routine{background:var(--blue);color:#fff}
+.req-patient{font-size:13px;font-weight:700;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.req-time{font-size:10.5px;font-weight:600;color:var(--text3);font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.req-card-body{padding:11px 13px;display:flex;flex-direction:column;gap:8px}
+.req-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.req-lbl{font-size:9.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;width:90px;flex-shrink:0}
+.req-val{font-size:12.5px;font-weight:600;color:var(--text)}
+.req-val.blood{color:var(--red);font-family:'JetBrains Mono',monospace}
+.req-val.doctor{color:var(--blue)}
+.compat-chip{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:var(--stab-bg);color:var(--stab);border:1px solid var(--stab-br);font-family:'JetBrains Mono',monospace}
+.compat-chip.unavail{background:var(--s3);color:var(--text3);border-color:var(--border)}
+.req-notes{font-size:12px;color:var(--text2);padding:8px 10px;background:var(--s2);border-radius:6px;border:1px solid var(--border);border-left:3px solid var(--border2);line-height:1.5}
+.req-actions{display:flex;gap:7px;flex-wrap:wrap}
+.act-btn{height:36px;padding:0 14px;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:5px}
+.act-btn:active{transform:scale(.97)}
+.act-btn.confirm{background:var(--stab);color:#fff}
+.act-btn.dispatch{background:var(--blue);color:#fff}
+.act-btn.delivered{background:var(--purple);color:#fff}
+.act-btn.secondary{background:var(--s2);color:var(--text2);border:1px solid var(--border)}
+.req-status-badge{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:5px;flex-shrink:0}
+.req-status-badge.pending{background:var(--urg-bg);color:var(--urg);border:1px solid var(--urg-br)}
+.req-status-badge.confirmed{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-br)}
+.req-status-badge.dispatched{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br)}
+.req-status-badge.delivered{background:var(--stab-bg);color:var(--stab);border:1px solid var(--stab-br)}
+
+/* ── HISTORY LOG ── */
+.hist-row{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.hist-row:last-child{border-bottom:none}
+.hist-time{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text3);flex-shrink:0}
+.hist-who{font-size:11px;font-weight:600;color:var(--text2);flex-shrink:0;width:90px}
+.hist-what{font-size:12px;color:var(--text);line-height:1.4}
+
+/* ── FIELD ── */
+.field{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:10.5px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.field-input{height:40px;padding:0 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;width:100%;transition:border .14s}
+.field-input:focus{border-color:var(--blue);background:#fff}
+.field-input::placeholder{color:var(--text3)}
+.field-select{height:40px;padding:0 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;outline:none;width:100%;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.field-textarea{padding:9px 11px;background:var(--s2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;outline:none;width:100%;resize:none;min-height:72px;line-height:1.5;transition:border .14s}
+.field-textarea:focus{border-color:var(--blue);background:#fff}
+
+/* ── ADD STOCK MODAL ── */
+.modal-bg{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .18s}
+.modal-bg.show{opacity:1;pointer-events:all}
+.modal-card{background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:22px 22px 32px;width:100%;max-width:440px;box-shadow:var(--shadow-xl);transform:translateY(20px);transition:transform .2s}
+.modal-bg.show .modal-card{transform:translateY(0)}
+.modal-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px}
+.modal-foot{display:flex;gap:8px;margin-top:14px}
+.modal-confirm{flex:1;height:42px;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.modal-cancel{height:42px;padding:0 16px;background:none;border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text2);cursor:pointer}
+
+/* ── PIN MODAL ── */
+.pin-card{background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;padding:24px 24px 32px;width:100%;max-width:400px;box-shadow:var(--shadow-xl);transform:translateY(20px);transition:transform .2s}
+.modal-bg.show .pin-card{transform:translateY(0)}
+.pin-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px}
+.pin-sub{font-size:11.5px;color:var(--text3);margin-bottom:20px}
+.pin-dots{display:flex;gap:10px;justify-content:center;margin-bottom:20px}
+.pin-dot{width:12px;height:12px;border-radius:50%;border:2px solid var(--border2);transition:all .14s}
+.pin-dot.on{background:var(--red);border-color:var(--red)}
+.pin-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pkey{height:52px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-tap-highlight-color:transparent;transition:background .1s}
+.pkey:active{background:var(--s3)}
+.pkey.span2{grid-column:span 2;font-size:12px;color:var(--text3);font-weight:500}
+.pkey.del{font-size:14px;color:var(--text2)}
+
+/* ── INCOMING ALERT BANNER ── */
+.incoming-banner{display:none;align-items:center;gap:10px;padding:12px 14px;background:var(--red-bg);border:1.5px solid var(--red-br);border-radius:var(--r-sm);animation:bangIn .3s ease}
+.incoming-banner.show{display:flex}
+@keyframes bangIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.banner-pulse{width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0;animation:notifPulse 1.2s ease-in-out infinite}
+.banner-text{font-size:12.5px;font-weight:700;color:var(--red);flex:1}
+.banner-dismiss{font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;padding:4px;-webkit-tap-highlight-color:transparent;opacity:.7}
+.banner-dismiss:hover{opacity:1}
+
+/* ── EMPTY STATE ── */
+.empty-msg{font-size:12px;color:var(--text3);font-style:italic}
+
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="notif-wrap" id="notif-wrap">
+    <div class="notif-dot" id="notif-dot"></div>
+  </div>
+  <span class="nav-logo">SAHM</span>
+  <span class="nav-sep">//</span>
+  <span class="nav-label">Blood Service</span>
+  <span class="blood-badge">Hémobiologie</span>
+  <div class="nav-spacer"></div>
+  <button class="nav-signout">Sign out</button>
+</nav>
+
+<div class="main">
+
+  <!-- ── INCOMING ALERT ── -->
+  <div class="incoming-banner" id="incoming-banner">
+    <div class="banner-pulse"></div>
+    <div class="banner-text" id="banner-text">New blood request received</div>
+    <button class="banner-dismiss" onclick="dismissBanner()">Dismiss</button>
+  </div>
+
+  <!-- ── STATS ── -->
+  <div class="stats-bar" id="stats-bar">
+    <!-- rendered by JS -->
+  </div>
+
+  <!-- ── ACTIVE REQUESTS ── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Blood Requests</span>
+      <span id="req-count" style="font-size:11px;font-weight:600;color:var(--text3);background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:2px 7px">0</span>
+    </div>
+    <div class="card-body" id="req-list">
+      <div class="empty-msg">No active blood requests.</div>
+    </div>
+  </div>
+
+  <!-- ── BLOOD INVENTORY ── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Blood Inventory</span>
+      <button onclick="openAddStock(null)" style="height:28px;padding:0 10px;background:var(--red);color:#fff;border:none;border-radius:6px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:4px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add stock
+      </button>
+    </div>
+    <div class="card-body">
+      <div class="inv-grid" id="inv-grid"></div>
+    </div>
+  </div>
+
+  <!-- ── HISTORY ── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">Request History</span>
+      <span id="hist-count" style="font-size:11px;font-weight:600;color:var(--text3);background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:2px 7px">0</span>
+    </div>
+    <div class="card-body" id="hist-list">
+      <div class="empty-msg">No completed requests today.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── ADD STOCK MODAL ── -->
+<div class="modal-bg" id="stock-modal">
+  <div class="modal-card">
+    <div class="modal-title">Add Blood Stock</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="field">
+        <label class="field-label">Blood type</label>
+        <select class="field-select" id="st-type">
+          <option value="">Select type…</option>
+          <option>A+</option><option>A−</option><option>B+</option><option>B−</option>
+          <option>O+</option><option>O−</option><option>AB+</option><option>AB−</option>
+        </select>
+      </div>
+      <div class="field-grid">
+        <div class="field">
+          <label class="field-label">Units to add</label>
+          <input class="field-input" id="st-qty" type="number" min="1" max="50" placeholder="e.g. 4" inputmode="numeric">
+        </div>
+        <div class="field">
+          <label class="field-label">Expires (days)</label>
+          <input class="field-input" id="st-exp" type="number" min="1" max="42" placeholder="e.g. 35" inputmode="numeric">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Donor source / notes</label>
+        <input class="field-input" id="st-note" placeholder="e.g. Blood drive — CHU Ibn Badis">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="modal-confirm" onclick="submitStock()">Confirm stock entry</button>
+      <button class="modal-cancel" onclick="closeStock()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PIN MODAL ── -->
+<div class="modal-bg" id="pin-modal">
+  <div class="pin-card">
+    <div class="pin-title">Staff identification</div>
+    <div class="pin-sub" id="pin-sub">Enter your 4-digit PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-keys">
+      <div class="pkey" onclick="pinTap(1)">1</div><div class="pkey" onclick="pinTap(2)">2</div><div class="pkey" onclick="pinTap(3)">3</div>
+      <div class="pkey" onclick="pinTap(4)">4</div><div class="pkey" onclick="pinTap(5)">5</div><div class="pkey" onclick="pinTap(6)">6</div>
+      <div class="pkey" onclick="pinTap(7)">7</div><div class="pkey" onclick="pinTap(8)">8</div><div class="pkey" onclick="pinTap(9)">9</div>
+      <div class="pkey span2" onclick="closePin()">Cancel</div>
+      <div class="pkey" onclick="pinTap(0)">0</div>
+      <div class="pkey del" onclick="pinDel()">⌫</div>
+    </div>
+  </div>
+</div>
+
+<script src="/sahm-app/backend/blood.js"></script>
+</body>
+</html>

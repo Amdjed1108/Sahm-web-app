@@ -182,6 +182,27 @@ body{min-height:100dvh}
 .sev-btn.on.moderate{border-color:var(--urg);color:var(--urg);background:var(--urg-bg)}
 .sev-btn.on.normal{border-color:var(--stab);color:var(--stab);background:var(--stab-bg)}
 
+/* ── Blood request ── */
+.blood-req-btn{height:32px;padding:0 11px;background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-br);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:11.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;flex-shrink:0;-webkit-tap-highlight-color:transparent;transition:all .13s}
+.blood-req-btn:hover{background:var(--red);color:#fff}
+.blood-panel{position:fixed;inset:0;top:var(--nav-h);background:var(--surface);z-index:400;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s cubic-bezier(.25,.46,.45,.94)}
+.blood-panel.open{transform:translateY(0)}
+.blood-panel-head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--red-bg)}
+.blood-panel-title{font-size:15px;font-weight:700;color:var(--red)}
+.blood-panel-close{background:none;border:none;cursor:pointer;color:var(--red);padding:6px;border-radius:6px;display:flex;align-items:center;-webkit-tap-highlight-color:transparent}
+.blood-panel-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch}
+.blood-panel-foot{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--surface)}
+.blood-submit{flex:1;height:42px;background:var(--red);color:#fff;border:none;border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.blood-cancel{height:42px;padding:0 16px;background:none;border:1px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text2);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.urg-opt{flex:1;height:38px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--s2);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .13s;-webkit-tap-highlight-color:transparent}
+.urg-opt.on.immediate{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.urg-opt.on.urgent{border-color:var(--urg);color:var(--urg);background:var(--urg-bg)}
+.urg-opt.on.routine{border-color:var(--stab);color:var(--stab);background:var(--stab-bg)}
+.compat-info{display:flex;flex-wrap:wrap;gap:4px;padding:10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r-sm)}
+.compat-chip-sm{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:4px;background:var(--stab-bg);color:var(--stab);border:1px solid var(--stab-br);font-family:'JetBrains Mono',monospace}
+.blood-sent-notice{display:none;align-items:center;gap:8px;padding:12px;background:var(--stab-bg);border:1.5px solid var(--stab-br);border-radius:var(--r-sm);font-size:12.5px;font-weight:600;color:var(--stab);margin:12px 16px}
+.blood-sent-notice.show{display:flex}
+
 /* GCS widget (register panel) */
 .gcs-section{display:flex;flex-direction:column;gap:4px}
 .gcs-section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
@@ -212,8 +233,18 @@ body{min-height:100dvh}
 <body>
 
 <nav class="nav">
-  <div class="notif-wrap" id="notif-wrap">
-    <div class="notif-dot" id="notif-dot"></div>
+  <div style="position:relative;display:flex;align-items:center;flex-shrink:0">
+    <div class="notif-wrap" id="notif-wrap" onclick="toggleNotifPanel(event)" style="cursor:pointer">
+      <div class="notif-dot" id="notif-dot"></div>
+    </div>
+    <!-- Notif dropdown -->
+    <div id="notif-panel" style="display:none;position:absolute;top:44px;left:-4px;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-md);z-index:600;overflow:hidden">
+      <div style="padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:10.5px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Notifications</span>
+        <button onclick="markAllRead(event)" style="font-size:10px;font-weight:600;color:var(--text3);background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Mark all read</button>
+      </div>
+      <div id="notif-panel-list" style="max-height:300px;overflow-y:auto"></div>
+    </div>
   </div>
   <span class="nav-logo">SAHM</span>
   <span class="nav-sep">//</span>
@@ -252,6 +283,10 @@ body{min-height:100dvh}
           <div class="pt-header-meta" id="ph-meta">—</div>
         </div>
         <span class="gcs-badge-large" id="ph-gcs-badge">GCS —</span>
+        <button class="blood-req-btn" id="btn-blood" onclick="openBloodPanel()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L12 22 M5 9 Q12 2 19 9 Q19 18 12 22 Q5 18 5 9Z"/></svg>
+          Blood
+        </button>
         <button class="log-btn" id="btn-log">Log</button>
       </div>
 
@@ -419,6 +454,58 @@ body{min-height:100dvh}
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- Blood Request Panel -->
+<div class="blood-panel" id="blood-panel">
+  <div class="blood-panel-head">
+    <span class="blood-panel-title">🩸 Request Blood</span>
+    <button class="blood-panel-close" onclick="closeBloodPanel()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="blood-panel-body">
+
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Patient</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text)" id="bp-patient-name">—</div>
+      <div style="font-size:11.5px;color:var(--text2);margin-top:2px" id="bp-patient-info">—</div>
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Compatible donor types for this patient</div>
+      <div class="compat-info" id="bp-compat-chips">—</div>
+      <div style="font-size:10.5px;color:var(--text3);margin-top:5px">Based on patient's blood type. Blood bank will pull from available stock.</div>
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Urgency</div>
+      <div style="display:flex;gap:6px">
+        <button class="urg-opt" data-u="immediate" onclick="setBloodUrg(this)">Immediate</button>
+        <button class="urg-opt" data-u="urgent" onclick="setBloodUrg(this)">Urgent</button>
+        <button class="urg-opt" data-u="routine" onclick="setBloodUrg(this)">Routine</button>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Units needed</div>
+      <input class="field-input" id="bp-units" type="number" min="1" max="10" placeholder="Number of units" inputmode="numeric" style="max-width:160px">
+    </div>
+
+    <div>
+      <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Clinical notes</div>
+      <textarea class="field-textarea" id="bp-notes" rows="2" placeholder="Reason for transfusion, clinical context…" style="min-height:60px"></textarea>
+    </div>
+
+  </div>
+  <div class="blood-sent-notice" id="blood-sent-notice">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    Request sent to Blood Service
+  </div>
+  <div class="blood-panel-foot">
+    <button class="blood-submit" onclick="openPin('blood')">Send request (PIN required)</button>
+    <button class="blood-cancel" onclick="closeBloodPanel()">Cancel</button>
   </div>
 </div>
 
@@ -591,12 +678,68 @@ function gcsLabel(gcs, sev){
 }
 
 /* ── Notif ── */
+function getAlerts(){ try{ return JSON.parse(localStorage.getItem('sahm_alerts')||'[]'); }catch(e){return [];} }
+function getBloodPending(){ try{ return JSON.parse(localStorage.getItem('sahm_blood_requests')||'[]').filter(r=>r.status==='pending'); }catch(e){return [];} }
+
 function renderNotif(){
   const dot = document.getElementById('notif-dot');
-  const unread = NOTIF_MSGS.filter(m => !m.read);
-  if(unread.length){ dot.classList.add('has-count'); dot.textContent = unread.length; }
+  const unreadAlerts = getAlerts().filter(a => !a.read && (a.audience==='all'||a.audience==='ER')).length;
+  const bloodPending = getBloodPending().length;
+  const unreadMsgs = NOTIF_MSGS.filter(m => !m.read).length;
+  const total = unreadAlerts + bloodPending + unreadMsgs;
+  if(total){ dot.classList.add('has-count'); dot.textContent = total; }
   else { dot.classList.remove('has-count'); dot.textContent = ''; }
 }
+
+function toggleNotifPanel(e){
+  e.stopPropagation();
+  const panel = document.getElementById('notif-panel');
+  const open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if(!open) renderNotifPanel();
+}
+document.addEventListener('click', () => { const p=document.getElementById('notif-panel'); if(p) p.style.display='none'; });
+
+function renderNotifPanel(){
+  const list = document.getElementById('notif-panel-list'); if(!list) return;
+  const alerts = getAlerts().filter(a => a.audience==='all'||a.audience==='ER');
+  const blood  = getBloodPending();
+  const msgs   = NOTIF_MSGS;
+  let html = '';
+  blood.forEach(r=>{
+    html += `<div style="padding:9px 12px;border-bottom:1px solid var(--border);background:var(--red-bg)">
+      <div style="font-size:11.5px;font-weight:700;color:var(--red)">🩸 Blood request — ${r.urgency.toUpperCase()}</div>
+      <div style="font-size:12px;color:var(--text);margin-top:2px">${r.patientName} · ${r.patientBloodType} · ${r.unitsNeeded}u</div>
+      <div style="font-size:10.5px;color:var(--text3)">${r.doctorName} · ${r.requestedAt}</div></div>`;
+  });
+  msgs.forEach(m=>{
+    html += `<div style="padding:9px 12px;border-bottom:1px solid var(--border);${m.read?'opacity:.55':''}">
+      <div style="font-size:11.5px;font-weight:600;color:var(--blue)">📡 ${m.from}</div>
+      <div style="font-size:12px;color:var(--text);margin-top:2px;line-height:1.4">${m.msg}</div>
+      <div style="font-size:10.5px;color:var(--text3)">${m.time}</div></div>`;
+  });
+  alerts.slice().reverse().forEach(a=>{
+    const col = a.type==='alert' ? 'var(--red)' : 'var(--blue)';
+    html += `<div style="padding:9px 12px;border-bottom:1px solid var(--border);${a.read?'opacity:.55':''}">
+      <div style="font-size:11px;color:var(--text3)">${a.type==='alert'?'⚠':'ℹ'} ${a.time} · Admin</div>
+      <div style="font-size:12.5px;color:var(--text);margin-top:2px;line-height:1.4">${a.text}</div></div>`;
+  });
+  if(!html) html='<div style="padding:14px;font-size:12px;color:var(--text3);text-align:center">No notifications</div>';
+  list.innerHTML = html;
+}
+
+function markAllRead(e){
+  if(e) e.stopPropagation();
+  NOTIF_MSGS.forEach(m=>m.read=true);
+  try{
+    const alerts = getAlerts().map(a => (a.audience==='all'||a.audience==='ER') ? {...a,read:true} : a);
+    localStorage.setItem('sahm_alerts', JSON.stringify(alerts));
+  }catch(ex){}
+  renderNotif();
+  renderNotifPanel();
+}
+
+setInterval(renderNotif, 2000);
 
 /* ── Patient tabs ── */
 function renderTabs(){
@@ -821,6 +964,74 @@ function processPinAction(){
   const docName = doc ? doc.name + ' (' + doc.role + ')' : 'Unknown (PIN: '+pinVal+')';
   if(pinAction === 'exam') openExamForm();
   else if(pinAction === 'decision') finalizeDecision(docName);
+  else if(pinAction === 'blood') submitBloodRequest(docName);
+}
+
+/* ── Blood compatibility ── */
+const CAN_RECEIVE_FROM = {
+  'O−':['O−'],'O+':['O−','O+'],'A−':['O−','A−'],'A+':['O−','O+','A−','A+'],
+  'B−':['O−','B−'],'B+':['O−','O+','B−','B+'],
+  'AB−':['O−','A−','B−','AB−'],'AB+':['O−','O+','A−','A+','B−','B+','AB−','AB+'],
+};
+
+/* ── Blood panel ── */
+let bloodUrg = '';
+
+function openBloodPanel(){
+  const p = PATIENTS.find(x => x.id === selectedId); if(!p) return;
+  document.getElementById('bp-patient-name').textContent = p.name;
+  document.getElementById('bp-patient-info').textContent = `Blood type: ${p.blood} · DOB: ${p.dob}`;
+  const compat = CAN_RECEIVE_FROM[p.blood] || [];
+  const chipsEl = document.getElementById('bp-compat-chips');
+  chipsEl.innerHTML = compat.length
+    ? compat.map(t => `<span class="compat-chip-sm">${t}</span>`).join('')
+    : '<span style="font-size:12px;color:var(--text3)">Unknown blood type</span>';
+  bloodUrg = '';
+  document.querySelectorAll('.urg-opt').forEach(b => b.classList.remove('on','immediate','urgent','routine'));
+  document.getElementById('bp-units').value = '';
+  document.getElementById('bp-notes').value = '';
+  document.getElementById('blood-sent-notice').classList.remove('show');
+  document.getElementById('blood-panel').classList.add('open');
+}
+
+function closeBloodPanel(){ document.getElementById('blood-panel').classList.remove('open'); }
+
+function setBloodUrg(btn){
+  document.querySelectorAll('.urg-opt').forEach(b => b.classList.remove('on','immediate','urgent','routine'));
+  btn.classList.add('on', btn.dataset.u);
+  bloodUrg = btn.dataset.u;
+}
+
+function submitBloodRequest(doctorName){
+  const p = PATIENTS.find(x => x.id === selectedId); if(!p) return;
+  if(!bloodUrg){ alert('Select urgency level.'); return; }
+  const units = parseInt(document.getElementById('bp-units').value) || 1;
+  const notes = document.getElementById('bp-notes').value.trim();
+  const req = {
+    id: 'r'+Date.now(),
+    patientName: p.name,
+    patientBloodType: p.blood,
+    doctorName,
+    requestedAt: nowStr(),
+    urgency: bloodUrg,
+    unitsNeeded: units,
+    notes,
+    status: 'pending',
+    confirmedBy: null,
+    confirmedAt: null,
+  };
+  // Save to localStorage so blood.html picks it up
+  try {
+    const raw = localStorage.getItem('sahm_blood_requests');
+    const existing = raw ? JSON.parse(raw) : [];
+    // Remove old demo seed if present
+    const filtered = existing.filter(r => r.id !== 'demo1');
+    filtered.push(req);
+    localStorage.setItem('sahm_blood_requests', JSON.stringify(filtered));
+  } catch(e){}
+  p.log.push({time:nowStr(), who:doctorName, what:`Blood request — ${units} unit(s) · ${bloodUrg} · Type ${p.blood}`});
+  renderHistory(p);
+  document.getElementById('blood-sent-notice').classList.add('show');
 }
 
 /* ── Register ── */

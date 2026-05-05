@@ -27,20 +27,21 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 
 /* NAV */
 .nav{position:fixed;top:0;left:0;right:0;height:62px;background:var(--surface);border-bottom:1.5px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;padding:0 24px 0 0;gap:0;z-index:50}
-/* Notif dot */
-.notif-wrap{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.notif-dot{min-width:8px;height:8px;border-radius:99px;background:#EF4444;animation:notifPulse 2.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;line-height:1;transition:min-width .18s,height .18s,padding .18s;padding:0}
-.notif-dot.has-count{min-width:16px;height:16px;padding:0 4px}
-@keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
 .nav-left-area{width:300px;flex-shrink:0;display:flex;align-items:center;padding:0 24px;gap:12px;border-right:1.5px solid var(--border);height:100%}
-.nav-logo{font-size:16px;font-weight:700;letter-spacing:2px}
-.nav-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.nav-logo{font-size:13px;font-weight:700;letter-spacing:2.5px;color:var(--text);flex-shrink:0}
+.nav-sep{font-size:11px;color:var(--border2);letter-spacing:1px;flex-shrink:0}
 .nav-role{font-size:12px;font-weight:500;color:var(--text2)}
 .nav-right-area{flex:1;display:flex;align-items:center;padding:0 24px;gap:14px}
 .nav-spacer{flex:1}
 .nav-user{font-size:13px;font-weight:600}
 .btn-ghost{height:32px;padding:0 12px;background:var(--surface);color:var(--text2);border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .14s}
 .btn-ghost:hover{background:var(--s3)}
+/* notif dot — unified */
+.notif-wrap{display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;position:relative}
+.notif-dot{min-width:8px;height:8px;border-radius:99px;background:#EF4444;animation:notifPulse 2.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;transition:min-width .18s,height .18s,padding .18s;padding:0}
+.notif-dot.has-count{min-width:16px;height:16px;padding:0 4px}
+@keyframes notifPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
+.specialty-pill{font-size:11px;font-weight:600;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br);border-radius:999px;padding:2px 8px}
 
 /* LAYOUT */
 .layout{position:fixed;top:62px;left:0;right:0;bottom:0;display:flex}
@@ -50,7 +51,6 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 .left-header{padding:22px 22px 16px;border-bottom:1.5px solid var(--border);flex-shrink:0}
 .left-header-title{font-size:14px;font-weight:700;margin-bottom:4px}
 .left-header-sub{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px}
-.specialty-pill{font-size:11px;font-weight:600;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-br);border-radius:999px;padding:2px 8px}
 
 .left-scroll{flex:1;overflow-y:auto;padding:10px}
 .left-scroll::-webkit-scrollbar{width:4px}
@@ -181,13 +181,20 @@ html,body{height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(
 <!-- NAV -->
 <nav class="nav">
   <div class="nav-left-area">
-    <div class="notif-wrap" id="notif-wrap" onclick="toggleNotif()" style="margin-right:4px">
-      <div class="notif-dot" id="notif-dot"></div>
+    <div style="position:relative;display:flex;align-items:center">
+      <div class="notif-wrap" onclick="toggleNotifPanel(event)"><div class="notif-dot" id="notif-dot"></div></div>
+      <div id="notif-panel" style="display:none;position:absolute;top:34px;left:-4px;width:290px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-md);z-index:600;overflow:hidden">
+        <div style="padding:9px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px">Notifications</span>
+          <button onclick="markAllRead(event)" style="font-size:10px;font-weight:600;color:var(--text3);background:none;border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif">Mark all read</button>
+        </div>
+        <div id="notif-panel-list" style="max-height:280px;overflow-y:auto"></div>
+      </div>
     </div>
     <span class="nav-logo">SAHM</span>
-    <div class="nav-sep"></div>
+    <span class="nav-sep">//</span>
     <span class="nav-role">Specialist</span>
-    <span class="specialty-pill" id="nav-specialty-pill">Cardiology</span>
+    <span class="specialty-pill" id="nav-specialty">Radiology</span>
   </div>
   <div class="nav-right-area">
     <div class="nav-spacer"></div>
@@ -482,19 +489,51 @@ function renderLeft(){
 document.getElementById('rerun-cancel').onclick=()=>document.getElementById('rerun-modal').classList.remove('show');
 document.getElementById('rerun-modal').onclick=function(e){if(e.target===this)this.classList.remove('show')};
 
-/* ─── Notifications ─── */
-let NOTIF_MSGS=[
-  {id:'n1',from:'Admin',msg:'New request from Dr. Rédha — Chest X-ray urgent.',time:'10:38',type:'alert',read:false},
-];
+renderLeftPanel();
+/* notif dot */
+let NOTIF_MSGS=[{id:'n1',read:false,from:'Admin',msg:'Reminder: all specialist results must be validated within 2 hours.',time:'08:30'}];
+function getAlerts(){ try{ return JSON.parse(localStorage.getItem('sahm_alerts')||'[]'); }catch(e){return [];} }
+function getBloodPending(){ try{ return JSON.parse(localStorage.getItem('sahm_blood_requests')||'[]').filter(r=>r.status==='pending'); }catch(e){return [];} }
+
 function renderNotif(){
+  const unreadAlerts=getAlerts().filter(a=>!a.read&&(a.audience==='all'||a.audience==='Specialists')).length;
+  const blood=getBloodPending().length;
+  const unreadMsgs=NOTIF_MSGS.filter(m=>!m.read).length;
+  const total=unreadAlerts+blood+unreadMsgs;
   const dot=document.getElementById('notif-dot');
-  const unread=NOTIF_MSGS.filter(m=>!m.read);
-  if(unread.length){dot.classList.add('has-count');dot.textContent=unread.length;}
-  else{dot.classList.remove('has-count');dot.textContent='';}
+  if(total){dot.classList.add('has-count');dot.textContent=total;}else{dot.classList.remove('has-count');dot.textContent='';}
+}
+
+function toggleNotifPanel(e){
+  e.stopPropagation();
+  const panel=document.getElementById('notif-panel');
+  const open=panel.style.display!=='none';
+  panel.style.display=open?'none':'block';
+  if(!open) renderNotifPanel();
+}
+document.addEventListener('click',()=>{const p=document.getElementById('notif-panel');if(p)p.style.display='none';});
+
+function renderNotifPanel(){
+  const list=document.getElementById('notif-panel-list');if(!list)return;
+  const alerts=getAlerts().filter(a=>a.audience==='all'||a.audience==='Specialists');
+  const blood=getBloodPending();
+  let html='';
+  blood.forEach(r=>{html+=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);background:var(--crit-bg)"><div style="font-size:11.5px;font-weight:700;color:var(--crit)">🩸 Blood — ${r.urgency.toUpperCase()}</div><div style="font-size:12px;color:var(--text);margin-top:2px">${r.patientName} · ${r.patientBloodType}</div><div style="font-size:10.5px;color:var(--text3)">${r.requestedAt}</div></div>`;});
+  NOTIF_MSGS.forEach(m=>{html+=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);${m.read?'opacity:.55':''}"><div style="font-size:11px;color:var(--text3)">📡 ${m.from} · ${m.time||''}</div><div style="font-size:12px;color:var(--text);margin-top:2px;line-height:1.4">${m.msg}</div></div>`;});
+  alerts.slice().reverse().forEach(a=>{html+=`<div style="padding:9px 12px;border-bottom:1px solid var(--border);${a.read?'opacity:.55':''}"><div style="font-size:11px;color:var(--text3)">${a.type==='alert'?'⚠':'ℹ'} ${a.time} · Admin</div><div style="font-size:12px;color:var(--text);margin-top:2px;line-height:1.4">${a.text}</div></div>`;});
+  if(!html)html='<div style="padding:14px;font-size:12px;color:var(--text3);text-align:center">No notifications</div>';
+  list.innerHTML=html;
+}
+
+function markAllRead(e){
+  if(e)e.stopPropagation();
+  NOTIF_MSGS.forEach(m=>m.read=true);
+  try{const alerts=getAlerts().map(a=>(a.audience==='all'||a.audience==='Specialists')?{...a,read:true}:a);localStorage.setItem('sahm_alerts',JSON.stringify(alerts));}catch(ex){}
+  renderNotif();renderNotifPanel();
 }
 renderNotif();
-
-renderLeftPanel();
+setInterval(renderNotif,2000);
+renderNotif();
 </script>
 </body>
 </html>
