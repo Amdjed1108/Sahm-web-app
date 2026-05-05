@@ -652,14 +652,14 @@ let PATIENTS = [
     log:[{time:nowStr(),who:'Intern',what:'Registered — GCS 11 (Moderate)'}]},
 ];
 
+function nowStr(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+
 let NOTIF_MSGS = [
   {id:'n1',from:'Ambulance',msg:'Incoming patient — GCS 6, Protection Civile, ETA 8 min. Male, ~62y, head trauma.',time:nowStr(),read:false},
 ];
 
 let selectedId = null;
 let pinVal = '', pinAction = '';
-
-function nowStr(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
 
 /* ── Severity helpers ── */
 function gcsSeverity(gcs){
@@ -740,6 +740,7 @@ function markAllRead(e){
 }
 
 setInterval(renderNotif, 2000);
+renderNotif();
 
 /* ── Patient tabs ── */
 function renderTabs(){
